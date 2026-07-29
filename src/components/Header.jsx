@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { money } from "../lib/format";
+const LOGO = "/logo/logo.png";
 
 export default function Header() {
   const { wallet, portfolioTotals, pendingRequests, topUpWallet, theme, toggleTheme, resetDemo } = useApp();
@@ -28,7 +29,7 @@ export default function Header() {
   return (
     <header className="header">
       <NavLink to="/" className="brand">
-        <div className="mark">⟡</div>
+        <img src={LOGO} alt="Fractional" className="mark" />
         <div>
           <div className="brandName">Fractional</div>
           <div className="brandSub">ownership, by the share</div>
