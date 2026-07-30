@@ -18,8 +18,8 @@
   --danger: #E0485A;
   --tick-empty: #2B4C7E;
   --glow: rgba(30, 136, 229, 0.3);
-  --font-display: "Playfair Display", serif;
-  --font-body: Georgia, "Times New Roman", serif;
+  --font-display: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
