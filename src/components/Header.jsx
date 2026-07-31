@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { money } from "../lib/format";
 const LOGO = "/logo/logo.png";
@@ -8,6 +8,9 @@ export default function Header() {
   const { wallet, portfolioTotals, pendingRequests, topUpWallet, theme, toggleTheme, resetDemo } = useApp();
   const [showProfile, setShowProfile] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const profileRef = useRef(null);
 
   useEffect(() => {
@@ -25,48 +28,64 @@ export default function Header() {
     setTopUpAmount("");
   };
 
-  return (
-    <div className="headerOuter">
-      <header className="header">
-        <div className="headerLeft">
-          <NavLink to="/" className="brand">
-            <img src={LOGO} alt="Fractional" className="mark" />
-            <div>
-              <div className="brandName">Fractional</div>
-              <div className="brandSub">ownership, by the share</div>
-            </div>
-          </NavLink>
-          <nav className="tabs">
-            <NavLink to="/" end className={({ isActive }) => "tabBtn" + (isActive ? " tabBtnActive" : "")}>
-              Discover
-            </NavLink>
-            <NavLink
-              to="/portfolio"
-              className={({ isActive }) => "tabBtn" + (isActive ? " tabBtnActive" : "")}
-            >
-              My Ledger {portfolioTotals.count > 0 ? `(${portfolioTotals.count})` : ""}
-            </NavLink>
-            <NavLink
-              to="/team"
-              className={({ isActive }) => "tabBtn" + (isActive ? " tabBtnActive" : "")}
-            >
-              Team {pendingRequests.length > 0 ? `(${pendingRequests.length})` : ""}
-            </NavLink>
-            <NavLink
-              to="/profile"
-              className={({ isActive }) => "tabBtn" + (isActive ? " tabBtnActive" : "")}
-            >
-              Profile
-            </NavLink>
-            <NavLink
-              to="/list"
-              className={({ isActive }) => "tabBtn" + (isActive ? " tabBtnActive" : "")}
-            >
-              + List
-            </NavLink>
-          </nav>
-        </div>
+  const onSearch = (value) => {
+    const next = new URLSearchParams(searchParams);
+    if (value.trim()) next.set("q", value.trim());
+    else next.delete("q");
+    if (location.pathname !== "/") {
+      navigate(`/?${next.toString()}`);
+    } else {
+      setSearchParams(next, { replace: true });
+    }
+  };
 
+  const navCls = ({ isActive }) => "tabBtn" + (isActive ? " tabBtnActive" : "");
+  const mNavCls = ({ isActive }) => "mTab" + (isActive ? " mTabActive" : "");
+
+  return (
+    <>
+      <aside className="sidebar">
+        <Link to="/" className="brand">
+          <img src={LOGO} alt="Flux" className="mark" />
+          <span className="brandName">Flux</span>
+        </Link>
+        <nav className="sidebarNav">
+          <div className="sidebarSection">Platform</div>
+          <NavLink to="/" end className={navCls}>
+            Discover
+          </NavLink>
+          <NavLink to="/portfolio" className={navCls}>
+            My Ledger {portfolioTotals.count > 0 ? `(${portfolioTotals.count})` : ""}
+          </NavLink>
+          <NavLink to="/team" className={navCls}>
+            Team {pendingRequests.length > 0 ? `(${pendingRequests.length})` : ""}
+          </NavLink>
+          <NavLink to="/profile" className={navCls}>
+            Profile
+          </NavLink>
+          <NavLink to="/list" className={navCls}>
+            + List
+          </NavLink>
+        </nav>
+        <div className="sidebarUser">
+          <div className="avatarLetter">A</div>
+          <div className="sidebarUserMeta">
+            <div className="sidebarUserName">Alex Vance</div>
+            <div className="sidebarUserRole">PRO Investor</div>
+          </div>
+        </div>
+      </aside>
+
+      <header className="topbar">
+        <div className="topbarSearch">
+          <span className="searchIcon">⌕</span>
+          <input
+            placeholder="Search by city, asset type or yield..."
+            value={searchParams.get("q") || ""}
+            onChange={(e) => onSearch(e.target.value)}
+          />
+          <span className="kbd">⌘K</span>
+        </div>
         <div className="headerRight">
           <label className="themeToggle" title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
             <input type="checkbox" checked={theme === "light"} onChange={toggleTheme} />
@@ -76,15 +95,15 @@ export default function Header() {
           </label>
           <div className="profileWidget" ref={profileRef}>
             <button className="profileAvatar" onClick={() => setShowProfile((v) => !v)}>
-              <span className="avatarLetter">I</span>
+              <span className="avatarLetter">A</span>
               <span className="profileCaret">{showProfile ? "▲" : "▼"}</span>
             </button>
             {showProfile && (
               <div className="profileDropdown">
                 <div className="profileDropdownHead">
-                  <div className="avatarLarge">I</div>
+                  <div className="avatarLarge">A</div>
                   <div>
-                    <div className="profileDropdownName">Investor</div>
+                    <div className="profileDropdownName">Alex Vance</div>
                     <div className="profileDropdownWallet">{money(wallet)}</div>
                   </div>
                 </div>
@@ -141,6 +160,24 @@ export default function Header() {
           </div>
         </div>
       </header>
-    </div>
+
+      <nav className="mobileNav">
+        <NavLink to="/" end className={mNavCls}>
+          <span className="mIcon">◈</span>Discover
+        </NavLink>
+        <NavLink to="/portfolio" className={mNavCls}>
+          <span className="mIcon">▤</span>Ledger
+        </NavLink>
+        <NavLink to="/team" className={mNavCls}>
+          <span className="mIcon">◎</span>Team
+        </NavLink>
+        <NavLink to="/profile" className={mNavCls}>
+          <span className="mIcon">●</span>Profile
+        </NavLink>
+        <NavLink to="/list" className={mNavCls}>
+          <span className="mIcon">＋</span>List
+        </NavLink>
+      </nav>
+    </>
   );
 }
