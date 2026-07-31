@@ -2,6 +2,7 @@
 
 :root {
   --bg: #0E1B33;
+  --bg-rgb: 14, 27, 51;
   --surface: #162542;
   --surface-2: #1E3050;
   --border: #2B4C7E;
@@ -28,6 +29,7 @@
 
 [data-theme="light"] {
   --bg: #FFFFFF;
+  --bg-rgb: 255, 255, 255;
   --surface: #F4F6F9;
   --surface-2: #E8ECF4;
   --border: #CBD5E1;
@@ -74,11 +76,14 @@ body {
 
 .headerOuter {
   position: sticky;
-  top: 0;
+  top: 5px;
   z-index: 100;
   background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 28px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin: 5px auto;
+  max-width: 1120px;
+  box-shadow: var(--shadow-md);
 }
 
 .header {
@@ -86,7 +91,7 @@ body {
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 14px;
   padding: 12px 0;
 }
@@ -774,6 +779,78 @@ body {
   align-items: start;
 }
 @media (max-width: 760px) {
+  .headerOuter {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    margin: 0;
+    border-radius: 0;
+    max-width: 100%;
+    border-bottom: none;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+    padding-bottom: 8px;
+    background: rgba(var(--bg-rgb), 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 1000;
+  }
+  .header {
+    padding: 8px 16px;
+    justify-content: space-around;
+    margin: 0;
+    max-width: 100%;
+  }
+  .headerLeft {
+    display: none;
+  }
+  .headerRight {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .tabs {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    background: transparent;
+    border: none;
+    padding: 0;
+    gap: 0;
+    flex-wrap: nowrap;
+  }
+  .tabBtn {
+    flex: 1;
+    text-align: center;
+    padding: 6px 0;
+    font-size: 10px;
+    border-radius: 0;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    margin: 0;
+    color: var(--muted);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tabBtnActive {
+    color: var(--purple-light);
+    border-bottom-color: var(--purple-light);
+    background: transparent;
+    box-shadow: none;
+  }
+  .tabBtn:hover {
+    color: var(--purple-light);
+    background: transparent;
+  }
+  .profileWidget {
+    position: static;
+    display: none;
+  }
+  .footer {
+    padding-bottom: 60px;
+  }
+  
   .detailGrid {
     grid-template-columns: 1fr;
   }

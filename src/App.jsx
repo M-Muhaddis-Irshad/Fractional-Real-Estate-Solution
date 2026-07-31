@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import Header from "./components/Header";
@@ -12,8 +12,20 @@ import Profile from "./pages/Profile";
 import "./App.css";
 
 export default function App() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <AppProvider>
+      {loading && (
+        <div className="loading-screen">
+          <div className="loading-spinner" />
+        </div>
+      )}
       <Header />
       <div className="wrap">
         <main>
