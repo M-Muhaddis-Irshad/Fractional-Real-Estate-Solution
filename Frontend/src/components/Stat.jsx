@@ -1,10 +1,11 @@
-import React from "react";
-
-export default function Stat({ label, value }) {
+export default function Stat({ label, value, delta, tone = "neutral" }) {
+  const deltaCls =
+    tone === "up" ? "kpiUp" : tone === "down" ? "kpiDown" : "kpiNeutral";
   return (
-    <div className="statBox">
-      <div className="statValue">{value}</div>
-      <div className="statLabel">{label}</div>
+    <div className="kpi">
+      <div className="kpiLabel">{label}</div>
+      <div className="kpiValue">{value}</div>
+      {delta != null && <div className={`kpiDelta ${deltaCls}`}>{delta}</div>}
     </div>
   );
 }

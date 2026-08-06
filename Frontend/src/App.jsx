@@ -1,86 +1,78 @@
-import React, { useState, useEffect } from "react";
-import { Routes, Route, Link } from "react-router-dom";
-import { AppProvider } from "./context/AppContext";
-import Header from "./components/Header";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AppProvider, useApp } from "./context/AppContext";
+import { AdminProvider } from "./context/AdminContext";
 import Toast from "./components/Toast";
-import Discover from "./pages/Discover";
-import PropertyDetail from "./pages/PropertyDetail";
-import Portfolio from "./pages/Portfolio";
-import TeamDashboard from "./pages/TeamDashboard";
-import ListProperty from "./pages/ListProperty";
-import Profile from "./pages/Profile";
-import "./App.css";
+import Landing from "./pages/Landing";
+import AuthPage from "./pages/AuthPage";
+import UserLayout from "./components/dashboard/UserLayout";
+import AdminLayout from "./pages/admin/AdminLayout";
 
-export default function App() {
-  const [loading, setLoading] = useState(true);
+function Loading() {
+  return (
+    <div className="loadingScreen">
+      <div className="spinner" />
+    </div>
+  );
+}
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+function RequireUser({ children }) {
+  const { user } = useApp();
+  const location = useLocation();
+  if (!user) {
+    const next = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?next=${next}`} replace />;
+  }
+  if (user.role === "superadmin") return <Navigate to="/admin" replace />;
+  return children;
+}
+
+function RequireAdmin({ children }) {
+  const { user } = useApp();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "superadmin") return <Navigate to="/" replace />;
+  return children;
+}
+
+function AppShell() {
+  const { authChecked, user, initialized } = useApp();
+
+  if (!authChecked || (user && !initialized)) {
+    return <Loading />;
+  }
 
   return (
-    <AppProvider>
-      {loading && (
-        <div className="loading-screen">
-          <div className="loading-spinner" />
-        </div>
-      )}
-      <div className="appShell">
-        <Header />
-        <main className="wrap">
-          <Routes>
-            <Route path="/" element={<Discover />} />
-            <Route path="/property/:id" element={<PropertyDetail />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/team" element={<TeamDashboard />} />
-            <Route path="/list" element={<ListProperty />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
-        </main>
-        <footer className="footer">
-          <div className="footerCol">
-            <div className="footerBrand">
-              <img src="/logo/logo.png" alt="Flux" className="mark markSmall" />
-              Flux
-            </div>
-            <div className="footerDesc">
-              The world's premier gateway to fractional real estate liquidity. Redefining property
-              ownership for the digital age.
-            </div>
-          </div>
-          <div className="footerCol">
-            <div className="footerHeading">Marketplace</div>
-            <ul className="footerLinks">
-              <li><Link to="/">Latest Drops</Link></li>
-              <li><Link to="/portfolio">Secondary Market</Link></li>
-              <li><Link to="/">Asset Classes</Link></li>
-              <li><Link to="/profile">Yield Calculator</Link></li>
-            </ul>
-          </div>
-          <div className="footerCol">
-            <div className="footerHeading">Platform</div>
-            <ul className="footerLinks">
-              <li><Link to="/team">Security</Link></li>
-              <li><Link to="/team">Smart Contracts</Link></li>
-              <li><Link to="/list">API Docs</Link></li>
-              <li><Link to="/profile">Investor Kit</Link></li>
-            </ul>
-          </div>
-          <div className="footerCol">
-            <div className="footerHeading">Compliance</div>
-            <div className="footerCompliance">
-              Real estate investments involve risks. Performance is not guaranteed. Fractional tokens
-              are issued under Reg D/S exemptions. Please consult your financial advisor before
-              committing capital.
-            </div>
-          </div>
-          <div className="footerBottom">
-            © {new Date().getFullYear()} Obsidian Flux LLC. All rights reserved.
-          </div>
-        </footer>
-      </div>
+    <>
+      <Routes>
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="/" element={<Landing />} />
+        <Route
+          path="/admin/*"
+          element={
+            <RequireAdmin>
+              <AdminLayout />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/*"
+          element={
+            <RequireUser>
+              <UserLayout />
+            </RequireUser>
+          }
+        />
+      </Routes>
       <Toast />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <AppProvider>
+      <AdminProvider>
+        <AppShell />
+      </AdminProvider>
     </AppProvider>
   );
 }

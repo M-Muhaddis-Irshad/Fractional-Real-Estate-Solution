@@ -18,7 +18,6 @@ This is a complete React web application that simulates a real fractional real-e
 - **Real Estate Data**: 4 properties with realistic valuations (PKR 29.5M - 68M)
 - **Yield Analysis**: Properties yield 6.9-10.2% annually
 - **Multi-city Portfolio**: Residential, Commercial, and Industrial properties
-- **Wallet System**: Manage funds (starts with PKR 1,000,000)
 - **Approval Workflow**: Investment requests go through team review and approval
 - **Transaction History**: Detailed records with team fee tracking
 - **Light/Dark Mode**: Theme support
@@ -29,7 +28,6 @@ This is a complete React web application that simulates a real fractional real-e
 2. **View Property Details**: Review property info, yields, and pricing
 3. **Submit Requests**: Request specific share counts for properties
 4. **Track Portfolio**: Monitor holdings and transaction history
-5. **Manage Wallet**: Add funds and track balance
 
 ### Technical Implementation
 - React with TypeScript and React Router

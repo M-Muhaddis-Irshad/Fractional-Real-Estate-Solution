@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useApp } from "../context/AppContext";
 
 export default function Toast() {
@@ -6,13 +6,18 @@ export default function Toast() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(dismissToast, 2800);
+    const t = window.setTimeout(dismissToast, 3000);
     return () => window.clearTimeout(t);
-  }, [toast]);
+  }, [toast, dismissToast]);
 
   if (!toast) return null;
 
   return (
-    <div className={"toast" + (toast.tone === "error" ? " toastError" : "")}>{toast.message}</div>
+    <div className={`toast toast${toast.tone[0].toUpperCase()}${toast.tone.slice(1)}`} key={toast.id}>
+      <span>{toast.message}</span>
+      <button className="toastClose" onClick={dismissToast} aria-label="Dismiss">
+        ✕
+      </button>
+    </div>
   );
 }

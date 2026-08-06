@@ -1,40 +1,121 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { SEED_PROPERTIES, STARTING_WALLET_BALANCE } from "../data/properties";
-import { loadJSON, saveJSON, clearAll } from "../lib/storage";
-import { money } from "../lib/format";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { api, getToken, setToken } from "../lib/api";
+import { loadJSON, saveJSON } from "../lib/storage";
 
 const AppContext = createContext(null);
 
+function normalizeTransaction(t) {
+  return {
+    ...t,
+    id: String(t.id ?? t._id),
+    propertyId: String(t.propertyId),
+    name: t.name || t.propertyName,
+  };
+}
+
 export function AppProvider({ children }) {
-  const [properties, setProperties] = useState(() => loadJSON("properties", SEED_PROPERTIES));
-  const [transactions, setTransactions] = useState(() => loadJSON("transactions", []));
-  const [wallet, setWallet] = useState(() => loadJSON("wallet", STARTING_WALLET_BALANCE));
-  const [purchaseRequests, setPurchaseRequests] = useState(() => loadJSON("purchaseRequests", []));
-  const [teamFee, setTeamFeeState] = useState(() => loadJSON("teamFee", 2.25));
-  const [teamEarnings, setTeamEarnings] = useState(() => loadJSON("teamEarnings", 0));
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  const [properties, setProperties] = useState([]);
+  const [content, setContent] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [purchaseRequests, setPurchaseRequests] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [teamFee, setTeamFeeState] = useState(2.25);
+
   const [toast, setToast] = useState(null);
+  const [theme, setTheme] = useState(() => loadJSON("theme", "light"));
 
-  useEffect(() => { saveJSON("properties", properties); }, [properties]);
-  useEffect(() => { saveJSON("transactions", transactions); }, [transactions]);
-  useEffect(() => { saveJSON("wallet", wallet); }, [wallet]);
-  useEffect(() => { saveJSON("purchaseRequests", purchaseRequests); }, [purchaseRequests]);
-  useEffect(() => { saveJSON("teamFee", teamFee); }, [teamFee]);
-  useEffect(() => { saveJSON("teamEarnings", teamEarnings); }, [teamEarnings]);
+  useEffect(() => {
+    saveJSON("theme", theme);
+  }, [theme]);
 
-  const [theme, setTheme] = useState(() => loadJSON("theme", "dark"));
-
-  useEffect(() => { saveJSON("theme", theme); }, [theme]);
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
-  const notify = (message, tone = "default") => {
+  const notify = useCallback((message, tone = "default") => {
     setToast({ message, tone, id: Date.now() });
-  };
+  }, []);
 
-  const dismissToast = () => setToast(null);
+  const dismissToast = useCallback(() => setToast(null), []);
+
+  /* ---------------- Auth bootstrap ---------------- */
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        if (getToken()) {
+          const { user: authed } = await api("/auth/me", { auth: false });
+          if (active) setUser(authed);
+        }
+      } catch {
+        setToken(null);
+      } finally {
+        if (active) setAuthChecked(true);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  /* ---------------- Data loading ---------------- */
+
+  const loadUserData = useCallback(async (authedUser) => {
+    const [meRes, reqRes, notifRes] = await Promise.all([
+      api("/users/me").catch(() => null),
+      api("/requests").catch(() => null),
+      api("/users/notifications").catch(() => null),
+    ]);
+    if (meRes) setTransactions((meRes.transactions || []).map(normalizeTransaction));
+    if (reqRes) setPurchaseRequests(reqRes.requests || []);
+    if (notifRes) setNotifications(notifRes.notifications || []);
+    return authedUser;
+  }, []);
+
+  useEffect(() => {
+    if (!authChecked) return;
+    let active = true;
+
+    (async () => {
+      try {
+        const [propsRes, settingsRes, contentRes] = await Promise.all([
+          api("/properties", { auth: false }),
+          api("/settings", { auth: false }),
+          api("/settings/content", { auth: false }),
+        ]);
+        if (!active) return;
+        setProperties(propsRes.properties || []);
+        setTeamFeeState(settingsRes.settings.teamFee ?? 2.25);
+        setContent(contentRes.content);
+
+        if (user) await loadUserData(user);
+      } catch (err) {
+        if (active) notify(err.message, "error");
+      } finally {
+        if (active) setInitialized(true);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [authChecked, user, notify, loadUserData]);
+
+  /* ---------------- Derived ---------------- */
 
   const holdings = useMemo(() => {
     const map = new Map();
@@ -73,168 +154,133 @@ export function AppProvider({ children }) {
     [purchaseRequests]
   );
 
-  function requestInvestment(propertyId, shareCount) {
+  const unreadNotifications = useMemo(
+    () => notifications.filter((n) => !n.read).length,
+    [notifications]
+  );
+
+  const portfolioSeries = useMemo(() => {
+    const sorted = [...transactions].sort(
+      (a, b) => new Date(a.createdAt || a.date) - new Date(b.createdAt || b.date)
+    );
+    return sorted.reduce((acc, t) => {
+      const invested = (acc.length ? acc[acc.length - 1].invested : 0) + t.total;
+      return acc.concat({
+        label: t.date || (t.createdAt ? new Date(t.createdAt).toISOString().slice(0, 10) : ""),
+        invested,
+      });
+    }, []);
+  }, [transactions]);
+
+  /* ---------------- Actions ---------------- */
+
+  async function login(email, password) {
+    const data = await api("/auth/login", {
+      method: "POST",
+      body: { email, password },
+      auth: false,
+    });
+    setToken(data.token);
+    setUser(data.user);
+    notify(`Welcome back, ${data.user.name}.`, "success");
+    return { ok: true, user: data.user };
+  }
+
+  async function adminLogin(email, password) {
+    const data = await api("/auth/admin-login", {
+      method: "POST",
+      body: { email, password },
+      auth: false,
+    });
+    setToken(data.token);
+    setUser(data.user);
+    notify(`Welcome to the admin panel, ${data.user.name}.`, "success");
+    return { ok: true, user: data.user };
+  }
+
+  async function register({ name, email, password, acceptedTerms }) {
+    const data = await api("/auth/register", {
+      method: "POST",
+      body: { name, email, password, acceptedTerms },
+      auth: false,
+    });
+    setToken(data.token);
+    setUser(data.user);
+    notify(`Account created. Welcome, ${data.user.name}.`, "success");
+    return { ok: true, user: data.user };
+  }
+
+  function logout() {
+    setToken(null);
+    setUser(null);
+    setInitialized(false);
+    setTransactions([]);
+    setPurchaseRequests([]);
+    setNotifications([]);
+    notify("Signed out.", "default");
+  }
+
+  async function requestInvestment(propertyId, shareCount) {
     const property = properties.find((p) => p.id === propertyId);
     if (!property) return { ok: false, error: "Property not found." };
-
+    if (!property.investingOpen) {
+      return { ok: false, error: "Investing is currently paused for this property." };
+    }
     const remaining = property.totalShares - property.soldShares;
-    const count = Math.min(Math.max(1, Math.floor(shareCount)), remaining);
-    if (count <= 0) return { ok: false, error: "This property is fully subscribed." };
-
-    const totalCost = count * property.pricePerShare;
-    const teamFeeAmount = (totalCost * teamFee) / 100;
-
-    const request = {
-      id: `req_${Date.now()}`,
-      propertyId,
-      propertyName: property.name,
-      shares: count,
-      pricePerShare: property.pricePerShare,
-      totalCost,
-      teamFeePct: teamFee,
-      teamFeeAmount,
-      status: "pending",
-      date: new Date().toISOString().slice(0, 10),
-      time: new Date().toISOString().slice(11, 16),
-    };
-
-    setPurchaseRequests((prev) => [request, ...prev]);
-    notify(
-      `Request submitted for ${count} share${count > 1 ? "s" : ""} in ${property.name} — awaiting team approval`,
-      "default"
-    );
-
-    return { ok: true, request };
-  }
-
-  function processRequest(requestId, action) {
-    const request = purchaseRequests.find((r) => r.id === requestId);
-    if (!request) return { ok: false, error: "Request not found." };
-    if (request.status !== "pending") return { ok: false, error: "Request already processed." };
-
-    if (action === "reject") {
-      setPurchaseRequests((prev) =>
-        prev.map((r) => (r.id === requestId ? { ...r, status: "rejected", processedAt: new Date().toISOString() } : r))
-      );
-      notify(`Request for ${request.propertyName} rejected.`, "default");
-      return { ok: true };
+    if (remaining <= 0) {
+      return { ok: false, error: "This property is fully subscribed." };
     }
-
-    if (action === "approve") {
-      if (request.totalCost > wallet) {
-        return { ok: false, error: "Insufficient wallet balance to approve this request." };
-      }
-
-      const property = properties.find((p) => p.id === request.propertyId);
-      if (!property) return { ok: false, error: "Property not found." };
-      const remaining = property.totalShares - property.soldShares;
-      if (request.shares > remaining) {
-        return { ok: false, error: "Not enough shares remaining for this request." };
-      }
-
-      setWallet((prev) => prev - request.totalCost);
-      setProperties((prev) =>
-        prev.map((p) =>
-          p.id === request.propertyId ? { ...p, soldShares: p.soldShares + request.shares } : p
-        )
-      );
-
-      const transaction = {
-        id: `tx_${Date.now()}`,
-        propertyId: request.propertyId,
-        name: request.propertyName,
-        shares: request.shares,
-        pricePerShare: request.pricePerShare,
-        total: request.totalCost,
-        teamFee: request.teamFeeAmount,
-        teamFeePct: request.teamFeePct,
-        date: new Date().toISOString().slice(0, 10),
-        time: new Date().toISOString().slice(11, 16),
-      };
-      setTransactions((prev) => [transaction, ...prev]);
-      setTeamEarnings((prev) => prev + request.teamFeeAmount);
-      setPurchaseRequests((prev) =>
-        prev.map((r) => (r.id === requestId ? { ...r, status: "approved", processedAt: new Date().toISOString() } : r))
-      );
-
+    try {
+      const data = await api("/requests", {
+        method: "POST",
+        body: { propertyId, shares: shareCount },
+      });
+      setPurchaseRequests((prev) => [data.request, ...prev]);
       notify(
-        `Approved: ${request.shares} share${request.shares > 1 ? "s" : ""} in ${request.propertyName}`,
-        "success"
+        `Request submitted for ${data.request.shares} share${data.request.shares > 1 ? "s" : ""} in ${property.name} — awaiting team approval`,
+        "default"
       );
-      return { ok: true, transaction };
+      return { ok: true, request: data.request };
+    } catch (err) {
+      return { ok: false, error: err.message };
     }
-
-    return { ok: false, error: "Invalid action." };
   }
 
-  function setTeamFee(val) {
-    setTeamFeeState(Math.min(2.5, Math.max(2, val)));
-  }
-
-  function addProperty(data) {
-    const initials = data.name
-      .split(" ")
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-    const hue = Math.floor(Math.random() * 360);
-    const property = {
-      id: `p_${Date.now()}`,
-      name: data.name,
-      city: data.city,
-      type: data.type,
-      description: data.description,
-      totalValue: parseInt(data.totalValue, 10),
-      pricePerShare: parseInt(data.pricePerShare, 10),
-      totalShares: parseInt(data.totalShares, 10),
-      soldShares: 0,
-      yieldPct: parseFloat(data.yieldPct),
-      initials,
-      hue,
-    };
-    setProperties((prev) => [...prev, property]);
-    notify(`"${property.name}" listed successfully`, "success");
-    return { ok: true, property };
-  }
-
-  function topUpWallet(amount) {
-    const val = Math.max(0, Math.floor(parseInt(amount, 10)));
-    if (!val || val <= 0) return { ok: false, error: "Invalid amount." };
-    setWallet((prev) => prev + val);
-    notify(`Wallet topped up by ${money(val)}`, "success");
-    return { ok: true };
-  }
-
-  function resetDemo() {
-    setProperties(SEED_PROPERTIES);
-    setTransactions([]);
-    setWallet(STARTING_WALLET_BALANCE);
-    setPurchaseRequests([]);
-    setTeamFeeState(2.25);
-    setTeamEarnings(0);
-    clearAll(["properties", "transactions", "wallet", "purchaseRequests", "teamFee", "teamEarnings"]);
-    notify("Demo reset to starting state.", "default");
+  async function markNotificationRead(id) {
+    try {
+      await api(`/users/notifications/${id}/read`, { method: "POST" });
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      );
+    } catch {
+      /* non-critical */
+    }
   }
 
   const value = {
+    user,
+    authChecked,
+    initialized,
+    isAdmin: user && user.role === "superadmin",
     properties,
+    content,
     transactions,
     holdings,
     portfolioTotals,
-    wallet,
+    portfolioSeries,
     purchaseRequests,
     pendingRequests,
+    notifications,
+    unreadNotifications,
     teamFee,
-    teamEarnings,
+    login,
+    adminLogin,
+    register,
+    logout,
     requestInvestment,
-    processRequest,
-    setTeamFee,
-    topUpWallet,
-    addProperty,
+    markNotificationRead,
     theme,
     toggleTheme,
-    resetDemo,
     toast,
     notify,
     dismissToast,
