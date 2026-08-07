@@ -144,7 +144,8 @@ function AdminTopbar({ onMenu }) {
 }
 
 export default function AdminLayout() {
-  const { pendingRequests } = useAdmin();
+  const { requests } = useAdmin();
+  const pendingRequests = (requests || []).filter((r) => r.status === "pending");
   const [navOpen, setNavOpen] = useState(false);
   return (
     <div className="aShell">
@@ -156,19 +157,19 @@ export default function AdminLayout() {
         <AdminTopbar onMenu={() => setNavOpen(true)} />
         <main className="aContent">
           <Routes>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/properties" element={<AdminProperties />} />
-            <Route path="/admin/properties/new" element={<AdminPropertyForm />} />
-            <Route path="/admin/properties/:id/edit" element={<AdminPropertyForm />} />
-            <Route path="/admin/fractional" element={<AdminFractional />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/investments" element={<AdminInvestments />} />
-            <Route path="/admin/financials" element={<AdminFinancials />} />
-            <Route path="/admin/content" element={<AdminContent />} />
-            <Route path="/admin/notifications" element={<AdminNotifications />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/logs" element={<AdminLogs />} />
-            <Route path="*" element={<Navigate to="/admin" replace />} />
+            <Route path="/" element={<AdminDashboard />} />
+            <Route path="properties" element={<AdminProperties />} />
+            <Route path="properties/new" element={<AdminPropertyForm />} />
+            <Route path="properties/:id/edit" element={<AdminPropertyForm />} />
+            <Route path="fractional" element={<AdminFractional />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="investments" element={<AdminInvestments />} />
+            <Route path="financials" element={<AdminFinancials />} />
+            <Route path="content" element={<AdminContent />} />
+            <Route path="notifications" element={<AdminNotifications />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="logs" element={<AdminLogs />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>

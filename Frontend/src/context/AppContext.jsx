@@ -8,6 +8,7 @@ import {
 } from "react";
 import { api, getToken, setToken } from "../lib/api";
 import { loadJSON, saveJSON } from "../lib/storage";
+import { connectSocket, disconnectSocket } from "../lib/socket";
 
 const AppContext = createContext(null);
 
@@ -58,7 +59,7 @@ export function AppProvider({ children }) {
     (async () => {
       try {
         if (getToken()) {
-          const { user: authed } = await api("/auth/me", { auth: false });
+          const { user: authed } = await api("/auth/me");
           if (active) setUser(authed);
         }
       } catch {
@@ -171,6 +172,43 @@ export function AppProvider({ children }) {
       });
     }, []);
   }, [transactions]);
+
+  /* ---------------- Realtime ---------------- */
+
+  useEffect(() => {
+    if (!user) {
+      disconnectSocket();
+      return;
+    }
+    const socket = connectSocket();
+
+    const onNotification = (n) => {
+      if (n.audience === "admins" && user.role !== "superadmin") return;
+      setNotifications((prev) => [n, ...prev].slice(0, 50));
+      notify(n.title || "New announcement", "default");
+    };
+    const onRequestStatus = () => loadUserData(user);
+    const onAccountChanged = (info) => {
+      if (info?.status === "suspended") {
+        setToken(null);
+        setUser(null);
+        setInitialized(false);
+        notify("Your account has been suspended.", "error");
+      } else if (info?.status === "active" && user?.status !== "active") {
+        notify("Your account has been approved. Welcome aboard!", "success");
+      }
+    };
+
+    socket.on("notification:new", onNotification);
+    socket.on("request:status", onRequestStatus);
+    socket.on("account:changed", onAccountChanged);
+
+    return () => {
+      socket.off("notification:new", onNotification);
+      socket.off("request:status", onRequestStatus);
+      socket.off("account:changed", onAccountChanged);
+    };
+  }, [user, notify, loadUserData]);
 
   /* ---------------- Actions ---------------- */
 

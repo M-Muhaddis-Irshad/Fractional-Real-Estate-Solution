@@ -6,6 +6,7 @@ import { getSettings } from "../models/Settings.js";
 import { requireAuth, requireActive } from "../middleware/auth.js";
 import { logActivity } from "../utils/activity.js";
 import { money, nowParts } from "../utils/format.js";
+import { emitToAdmins } from "../utils/realtime.js";
 
 const router = Router();
 
@@ -71,6 +72,8 @@ router.post("/", async (req, res, next) => {
       message: `Requested ${count} share${count > 1 ? "s" : ""} in ${property.name} (${money(totalCost)}).`,
       meta: { requestId: request._id.toString(), propertyId: property._id.toString() },
     });
+
+    emitToAdmins("requests:changed");
 
     res.status(201).json({ request: request.toSafeJSON() });
   } catch (err) {

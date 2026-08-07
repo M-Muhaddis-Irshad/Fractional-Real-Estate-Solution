@@ -1,4 +1,4 @@
-const BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+export const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const TOKEN_KEY = "flux_token";
 
 export function getToken() {
@@ -23,7 +23,7 @@ export async function api(path, { method = "GET", body, auth = true } = {}) {
   const token = getToken();
   if (auth && token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(BASE + "/api" + path, {
+  const res = await fetch(API_BASE + "/api" + path, {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,

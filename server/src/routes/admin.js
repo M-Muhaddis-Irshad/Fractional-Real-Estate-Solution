@@ -16,6 +16,7 @@ import { nowParts, money } from "../utils/format.js";
 import { uploadBuffer, destroyImage, cloudinaryConfigured } from "../utils/cloudinary.js";
 import { DEFAULT_CONTENT } from "../utils/content.js";
 import { buildHoldings, portfolioTotals } from "./users.js";
+import { emitToAdmins, emitToAll, emitToUser } from "../utils/realtime.js";
 
 const router = Router();
 
@@ -259,6 +260,7 @@ router.patch("/properties/:id/status", async (req, res, next) => {
       meta: { propertyId: property._id.toString(), from: previous, to: status },
     });
 
+    emitToAll("properties:changed");
     res.json({ property: property.toSafeJSON() });
   } catch (err) {
     next(err);
@@ -273,6 +275,7 @@ router.patch("/properties/:id/featured", async (req, res, next) => {
     property.featured = Boolean(req.body.featured);
     await property.save();
 
+    emitToAll("properties:changed");
     res.json({ property: property.toSafeJSON() });
   } catch (err) {
     next(err);
@@ -287,6 +290,7 @@ router.patch("/properties/:id/investing", async (req, res, next) => {
     property.investingOpen = Boolean(req.body.open);
     await property.save();
 
+    emitToAll("properties:changed");
     res.json({ property: property.toSafeJSON() });
   } catch (err) {
     next(err);
@@ -362,7 +366,11 @@ router.post("/notifications", async (req, res, next) => {
       meta: { notificationId: notification._id.toString() },
     });
 
-    res.status(201).json({ notification: notification.toSafeJSON() });
+    const payload = notification.toSafeJSON();
+    if (notification.audience === "admins") emitToAdmins("notification:new", payload);
+    else emitToAll("notification:new", payload);
+
+    res.status(201).json({ notification: payload });
   } catch (err) {
     next(err);
   }
@@ -501,6 +509,9 @@ router.patch("/users/:id/status", async (req, res, next) => {
     if (action === "approve" || action === "restore") user.rejectedReason = null;
     await user.save();
 
+    emitToAdmins("users:changed");
+    emitToUser(user._id, "account:changed", { status: user.status });
+
     await audit(
       req.user,
       user,
@@ -560,6 +571,8 @@ router.put("/users/:id", async (req, res, next) => {
       user.passwordHash = await bcrypt.hash(String(password), 10);
     }
     await user.save();
+
+    emitToAdmins("users:changed");
 
     await audit(
       req.user,
@@ -667,6 +680,15 @@ router.patch("/requests/:id/approve", async (req, res, next) => {
     const result = await approveRequest(req.user, request);
     if (!result.ok) return res.status(400).json({ error: result.error });
 
+    emitToUser(request.userId, "request:status", {
+      status: "approved",
+      requestId: request._id.toString(),
+      propertyName: request.propertyName,
+      shares: request.shares,
+    });
+    emitToAdmins("requests:changed");
+    emitToAll("properties:changed");
+
     res.json({
       ok: true,
       request: result.request.toSafeJSON(),
@@ -703,6 +725,14 @@ router.patch("/requests/:id/reject", async (req, res, next) => {
         { requestId: request._id.toString() }
       );
     }
+
+    emitToUser(request.userId, "request:status", {
+      status: "rejected",
+      requestId: request._id.toString(),
+      propertyName: request.propertyName,
+      shares: request.shares,
+    });
+    emitToAdmins("requests:changed");
 
     res.json({ ok: true, request: request.toSafeJSON() });
   } catch (err) {
@@ -774,6 +804,7 @@ router.post("/properties", uploadImage.single("image"), async (req, res, next) =
       meta: { propertyId: property._id.toString() },
     });
 
+    emitToAll("properties:changed");
     res.status(201).json({ property: property.toSafeJSON() });
   } catch (err) {
     next(err);
@@ -829,6 +860,7 @@ router.put("/properties/:id", uploadImage.single("image"), async (req, res, next
 
     await property.save();
 
+    emitToAll("properties:changed");
     res.json({ property: property.toSafeJSON() });
   } catch (err) {
     next(err);
@@ -845,6 +877,7 @@ router.delete("/properties/:id", async (req, res, next) => {
 
     if (property.imagePublicId) await destroyImage(property.imagePublicId);
 
+    emitToAll("properties:changed");
     res.json({ ok: true });
   } catch (err) {
     next(err);
@@ -870,6 +903,8 @@ router.put("/settings", async (req, res, next) => {
     }
     settings.updatedBy = req.user._id;
     await settings.save();
+
+    emitToAdmins("settings:changed");
 
     res.json({
       settings: {

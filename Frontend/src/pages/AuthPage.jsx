@@ -172,25 +172,6 @@ export default function AuthPage() {
           </button>
         </form>
 
-        <div className="authHint">
-          <div className="authHintTitle">
-            {isAdmin ? "Admin demo account" : "Demo accounts"}
-          </div>
-          {isAdmin ? (
-            <div className="authHintRow">Admin — muhaddisirshad58@gmail.com / fluxx@@</div>
-          ) : (
-            <>
-              <div className="authHintRow">Investor — alex.vance@example.com / demo1234</div>
-              <div className="authHintRow">
-                Admin — muhaddisirshad58@gmail.com / fluxx@@{" "}
-                <button className="authHintLink" onClick={() => switchMode("admin")}>
-                  (use Admin access)
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
         <div className="authBack">
           <Link to="/">← Back to homepage</Link>
         </div>

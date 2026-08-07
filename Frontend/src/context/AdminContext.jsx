@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { api } from "../lib/api";
+import { getSocket } from "../lib/socket";
 import { useApp } from "./AppContext";
 
 const AdminContext = createContext(null);
@@ -79,6 +80,32 @@ export function AdminProvider({ children }) {
     });
     return () => {
       active = false;
+    };
+  }, [isAdmin, load]);
+
+  // Live refresh: when anything the admin sees changes server-side,
+  // refetch the admin dataset instead of waiting for a manual reload.
+  // Debounced so bursts of events (e.g. several approvals in a row)
+  // collapse into a single reload.
+  useEffect(() => {
+    if (!isAdmin) return;
+    const socket = getSocket();
+    let timer = null;
+    const refresh = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => load(), 300);
+    };
+    const events = [
+      "requests:changed",
+      "properties:changed",
+      "users:changed",
+      "notification:new",
+      "settings:changed",
+    ];
+    events.forEach((ev) => socket.on(ev, refresh));
+    return () => {
+      clearTimeout(timer);
+      events.forEach((ev) => socket.off(ev, refresh));
     };
   }, [isAdmin, load]);
 
