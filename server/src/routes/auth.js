@@ -5,6 +5,7 @@ import { getSettings } from "../models/Settings.js";
 import { signToken } from "../utils/jwt.js";
 import { requireAuth } from "../middleware/auth.js";
 import { logActivity } from "../utils/activity.js";
+import { emitToAdmins } from "../utils/realtime.js";
 
 const router = Router();
 
@@ -36,13 +37,16 @@ router.post("/register", async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(String(password), 10);
     const settings = await getSettings();
+    // New investors get instant access by default. Admins can re-enable the
+    // manual review gate from Settings → "Require admin approval".
+    const requireApproval = settings.platform?.requireApproval === true;
 
     const user = await User.create({
       name: String(name).trim(),
       email: String(email).toLowerCase(),
       passwordHash,
       role: "user",
-      status: "pending",
+      status: requireApproval ? "pending" : "active",
       acceptedTerms: true,
       acceptedTermsAt: new Date(),
       termsVersion: settings.termsVersion,
@@ -51,13 +55,17 @@ router.post("/register", async (req, res, next) => {
     await logActivity({
       userId: user._id,
       type: "register",
-      message: "Account created and awaiting admin approval.",
+      message: requireApproval
+        ? "Account created and awaiting admin approval."
+        : "Account created with instant access.",
     });
     await logActivity({
       userId: user._id,
       type: "terms_accepted",
       message: `Accepted the Terms & Conditions (v${settings.termsVersion}).`,
     });
+
+    emitToAdmins("users:changed");
 
     const token = signToken(user);
     res.status(201).json({ token, user: user.toSafeJSON() });

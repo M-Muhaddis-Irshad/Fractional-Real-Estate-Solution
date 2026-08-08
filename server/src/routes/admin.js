@@ -8,15 +8,17 @@ import PurchaseRequest from "../models/PurchaseRequest.js";
 import Activity from "../models/Activity.js";
 import ErrorLog from "../models/ErrorLog.js";
 import Notification from "../models/Notification.js";
+import Token from "../models/Token.js";
 import { getSettings } from "../models/Settings.js";
 import { requireAuth, requireAdminActive } from "../middleware/auth.js";
 import { uploadImage } from "../middleware/upload.js";
 import { logActivity } from "../utils/activity.js";
-import { nowParts, money } from "../utils/format.js";
 import { uploadBuffer, destroyImage, cloudinaryConfigured } from "../utils/cloudinary.js";
 import { DEFAULT_CONTENT } from "../utils/content.js";
 import { buildHoldings, portfolioTotals } from "./users.js";
 import { emitToAdmins, emitToAll, emitToUser } from "../utils/realtime.js";
+import { approveRequest } from "../utils/investments.js";
+import { verifyChain } from "../utils/tokenchain.js";
 
 const router = Router();
 
@@ -615,63 +617,6 @@ router.get("/requests", async (req, res, next) => {
   }
 });
 
-async function approveRequest(admin, request) {
-  if (request.status !== "pending") {
-    return { ok: false, error: "Request already processed." };
-  }
-
-  const user = await User.findById(request.userId);
-  if (!user) return { ok: false, error: "Request owner no longer exists." };
-  if (user.status !== "active") {
-    return { ok: false, error: "This investor's account is not active." };
-  }
-
-  const property = await Property.findById(request.propertyId);
-  if (!property) return { ok: false, error: "Property not found." };
-  const remaining = property.totalShares - property.soldShares;
-  if (request.shares > remaining) {
-    return { ok: false, error: "Not enough shares remaining for this request." };
-  }
-
-  property.soldShares += request.shares;
-  await property.save();
-
-  const settings = await getSettings();
-  settings.teamEarnings += request.teamFeeAmount;
-  settings.updatedBy = admin._id;
-  await settings.save();
-
-  const { date, time } = nowParts();
-  const transaction = await Transaction.create({
-    userId: user._id,
-    propertyId: property._id,
-    propertyName: property.name,
-    shares: request.shares,
-    pricePerShare: request.pricePerShare,
-    total: request.totalCost,
-    teamFee: request.teamFeeAmount,
-    teamFeePct: request.teamFeePct,
-    date,
-    time,
-    requestId: request._id,
-  });
-
-  request.status = "approved";
-  request.processedAt = new Date();
-  request.processedBy = admin._id;
-  await request.save();
-
-  await audit(
-    admin,
-    user,
-    "request_approved",
-    `${request.shares} share${request.shares > 1 ? "s" : ""} approved in ${property.name} (${money(request.totalCost)}).`,
-    { requestId: request._id.toString(), propertyId: property._id.toString() }
-  );
-
-  return { ok: true, transaction, request, user, property };
-}
-
 router.patch("/requests/:id/approve", async (req, res, next) => {
   try {
     const request = await PurchaseRequest.findById(req.params.id);
@@ -686,6 +631,9 @@ router.patch("/requests/:id/approve", async (req, res, next) => {
       propertyName: request.propertyName,
       shares: request.shares,
     });
+    if (result.token) {
+      emitToUser(request.userId, "tokens:minted", { token: result.token.toSafeJSON() });
+    }
     emitToAdmins("requests:changed");
     emitToAll("properties:changed");
 
@@ -695,7 +643,39 @@ router.patch("/requests/:id/approve", async (req, res, next) => {
       transaction: result.transaction.toSafeJSON(),
       user: result.user.toSafeJSON(),
       property: result.property.toSafeJSON(),
+      token: result.token ? result.token.toSafeJSON() : null,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------- Token explorer ----------
+
+router.get("/tokens", async (req, res, next) => {
+  try {
+    const tokens = await Token.find()
+      .sort({ blockNumber: -1 })
+      .limit(500)
+      .populate("ownerId", "name email");
+    res.json({
+      tokens: tokens.map((t) => {
+        const json = t.toSafeJSON();
+        json.owner = json.ownerId
+          ? { id: json.ownerId._id.toString(), name: json.ownerId.name, email: json.ownerId.email }
+          : null;
+        delete json.ownerId;
+        return json;
+      }),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/tokens/verify", async (req, res, next) => {
+  try {
+    res.json(await verifyChain());
   } catch (err) {
     next(err);
   }

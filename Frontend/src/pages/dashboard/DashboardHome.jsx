@@ -75,7 +75,7 @@ export default function DashboardHome() {
               <Link to="/ledger" className="dLink">View all →</Link>
             </div>
             {pending.length === 0 ? (
-              <div className="dCardBodyEmpty">Nothing waiting for approval.</div>
+              <div className="dCardBodyEmpty">All investments settle instantly — nothing waits for approval.</div>
             ) : (
               <div className="dMiniList">
                 {pending.slice(0, 4).map((r) => (

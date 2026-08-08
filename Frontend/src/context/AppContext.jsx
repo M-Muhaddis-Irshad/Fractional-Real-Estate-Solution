@@ -30,6 +30,7 @@ export function AppProvider({ children }) {
   const [content, setContent] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [purchaseRequests, setPurchaseRequests] = useState([]);
+  const [tokens, setTokens] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [teamFee, setTeamFeeState] = useState(2.25);
 
@@ -76,14 +77,16 @@ export function AppProvider({ children }) {
   /* ---------------- Data loading ---------------- */
 
   const loadUserData = useCallback(async (authedUser) => {
-    const [meRes, reqRes, notifRes] = await Promise.all([
+    const [meRes, reqRes, notifRes, tokenRes] = await Promise.all([
       api("/users/me").catch(() => null),
       api("/requests").catch(() => null),
       api("/users/notifications").catch(() => null),
+      api("/tokens").catch(() => null),
     ]);
     if (meRes) setTransactions((meRes.transactions || []).map(normalizeTransaction));
     if (reqRes) setPurchaseRequests(reqRes.requests || []);
     if (notifRes) setNotifications(notifRes.notifications || []);
+    if (tokenRes) setTokens(tokenRes.tokens || []);
     return authedUser;
   }, []);
 
@@ -188,6 +191,15 @@ export function AppProvider({ children }) {
       notify(n.title || "New announcement", "default");
     };
     const onRequestStatus = () => loadUserData(user);
+    const onTokensMinted = () => loadUserData(user);
+    const onPropertiesChanged = async () => {
+      try {
+        const res = await api("/properties", { auth: false });
+        setProperties(res.properties || []);
+      } catch {
+        /* non-critical */
+      }
+    };
     const onAccountChanged = (info) => {
       if (info?.status === "suspended") {
         setToken(null);
@@ -201,11 +213,15 @@ export function AppProvider({ children }) {
 
     socket.on("notification:new", onNotification);
     socket.on("request:status", onRequestStatus);
+    socket.on("tokens:minted", onTokensMinted);
+    socket.on("properties:changed", onPropertiesChanged);
     socket.on("account:changed", onAccountChanged);
 
     return () => {
       socket.off("notification:new", onNotification);
       socket.off("request:status", onRequestStatus);
+      socket.off("tokens:minted", onTokensMinted);
+      socket.off("properties:changed", onPropertiesChanged);
       socket.off("account:changed", onAccountChanged);
     };
   }, [user, notify, loadUserData]);
@@ -254,6 +270,7 @@ export function AppProvider({ children }) {
     setInitialized(false);
     setTransactions([]);
     setPurchaseRequests([]);
+    setTokens([]);
     setNotifications([]);
     notify("Signed out.", "default");
   }
@@ -274,11 +291,25 @@ export function AppProvider({ children }) {
         body: { propertyId, shares: shareCount },
       });
       setPurchaseRequests((prev) => [data.request, ...prev]);
-      notify(
-        `Request submitted for ${data.request.shares} share${data.request.shares > 1 ? "s" : ""} in ${property.name} — awaiting team approval`,
-        "default"
-      );
-      return { ok: true, request: data.request };
+      if (data.transaction) {
+        // Instant settlement — the request came back already approved and
+        // an ownership token was minted on the Flux Chain.
+        setTransactions((prev) => [normalizeTransaction(data.transaction), ...prev]);
+        if (data.token) setTokens((prev) => [data.token, ...prev]);
+        if (data.property) {
+          setProperties((prev) => prev.map((p) => (p.id === data.property.id ? data.property : p)));
+        }
+        notify(
+          `Investment complete — ${data.request.shares} share${data.request.shares > 1 ? "s" : ""} in ${property.name} minted on the Flux Chain`,
+          "success"
+        );
+      } else {
+        notify(
+          `Request submitted for ${data.request.shares} share${data.request.shares > 1 ? "s" : ""} in ${property.name} — pending team review`,
+          "default"
+        );
+      }
+      return { ok: true, request: data.request, transaction: data.transaction, token: data.token };
     } catch (err) {
       return { ok: false, error: err.message };
     }
@@ -308,6 +339,7 @@ export function AppProvider({ children }) {
     portfolioSeries,
     purchaseRequests,
     pendingRequests,
+    tokens,
     notifications,
     unreadNotifications,
     teamFee,

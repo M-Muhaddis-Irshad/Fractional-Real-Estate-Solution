@@ -1,10 +1,34 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAdmin } from "../../context/AdminContext";
 import Badge from "../../components/Badge";
-import { money, moneyShort } from "../../lib/format";
+import { api } from "../../lib/api";
+import { money, moneyShort, shortHash } from "../../lib/format";
 
 export default function AdminFractional() {
   const { properties, transactions, toggleInvesting } = useAdmin();
+  const [tokens, setTokens] = useState([]);
+  const [chain, setChain] = useState(null);
+
+  // Refresh the ledger whenever admin data refreshes (incl. realtime events).
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [tokRes, chainRes] = await Promise.all([
+          api("/admin/tokens"),
+          api("/admin/tokens/verify"),
+        ]);
+        if (!active) return;
+        setTokens(tokRes.tokens || []);
+        setChain(chainRes);
+      } catch {
+        /* non-critical */
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [transactions, properties]);
 
   const totals = useMemo(() => {
     let totalShares = 0;
@@ -93,6 +117,40 @@ export default function AdminFractional() {
         {properties.length === 0 && (
           <div className="card dCardBodyEmpty">No properties listed yet.</div>
         )}
+      </div>
+
+      <div className="sectionHeading">
+        Flux Chain ledger <span className="dMuted">— tokenized ownership</span>
+        {chain && (
+          <span className={`badge ${chain.valid ? "badgeSuccess" : "badgeDanger"}`}>
+            {chain.valid ? `✓ ${chain.blockCount} blocks verified` : "✗ chain integrity failed"}
+          </span>
+        )}
+      </div>
+      <div className="tableWrap">
+        <div className="tableScroll">
+          <table className="dataTable">
+            <thead>
+              <tr><th>Token</th><th>Owner</th><th>Property</th><th>Shares</th><th>Value</th><th>Block</th><th>Block hash</th></tr>
+            </thead>
+            <tbody>
+              {tokens.filter((t) => t.kind === "mint").map((t) => (
+                <tr key={t.id}>
+                  <td className="dMono dStrong">{t.tokenId}</td>
+                  <td>{t.owner?.name || t.ownerName || "—"}</td>
+                  <td className="dStrong">{t.propertyName}</td>
+                  <td>{t.shares}</td>
+                  <td className="dStrong">{money(t.totalValue)}</td>
+                  <td className="dMono">#{t.blockNumber}</td>
+                  <td className="dMono">{shortHash(t.hash)}</td>
+                </tr>
+              ))}
+              {tokens.filter((t) => t.kind === "mint").length === 0 && (
+                <tr><td colSpan={7} className="tableEmpty">No tokens minted yet — purchases mint automatically.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

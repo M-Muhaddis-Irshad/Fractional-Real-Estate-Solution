@@ -6,7 +6,8 @@ import { getSettings } from "../models/Settings.js";
 import { requireAuth, requireActive } from "../middleware/auth.js";
 import { logActivity } from "../utils/activity.js";
 import { money, nowParts } from "../utils/format.js";
-import { emitToAdmins } from "../utils/realtime.js";
+import { emitToAdmins, emitToUser, emitToAll } from "../utils/realtime.js";
+import { approveRequest } from "../utils/investments.js";
 
 const router = Router();
 
@@ -48,6 +49,7 @@ router.post("/", async (req, res, next) => {
     }
 
     const settings = await getSettings();
+    const requireApproval = settings.platform?.requireApproval === true;
     const totalCost = count * property.pricePerShare;
     const teamFeeAmount = (totalCost * settings.teamFee) / 100;
     const { date, time } = nowParts();
@@ -73,9 +75,38 @@ router.post("/", async (req, res, next) => {
       meta: { requestId: request._id.toString(), propertyId: property._id.toString() },
     });
 
-    emitToAdmins("requests:changed");
+    // Manual review gate is off by default — settle the purchase instantly.
+    if (requireApproval) {
+      emitToAdmins("requests:changed");
+      return res.status(201).json({ request: request.toSafeJSON() });
+    }
 
-    res.status(201).json({ request: request.toSafeJSON() });
+    const result = await approveRequest(null, request);
+    if (!result.ok) {
+      // e.g. the last shares sold while this request was being processed —
+      // keep the request pending so the team can handle it manually.
+      emitToAdmins("requests:changed");
+      return res.status(400).json({ error: result.error, request: request.toSafeJSON() });
+    }
+
+    emitToUser(req.user._id, "request:status", {
+      status: "approved",
+      requestId: request._id.toString(),
+      propertyName: request.propertyName,
+      shares: request.shares,
+    });
+    if (result.token) {
+      emitToUser(req.user._id, "tokens:minted", { token: result.token.toSafeJSON() });
+    }
+    emitToAdmins("requests:changed");
+    emitToAll("properties:changed");
+
+    res.status(201).json({
+      request: result.request.toSafeJSON(),
+      transaction: result.transaction.toSafeJSON(),
+      property: result.property.toSafeJSON(),
+      token: result.token ? result.token.toSafeJSON() : null,
+    });
   } catch (err) {
     next(err);
   }

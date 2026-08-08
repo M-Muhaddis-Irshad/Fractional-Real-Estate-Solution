@@ -4,7 +4,7 @@ import { useApp } from "../../context/AppContext";
 import OwnershipBar from "../../components/OwnershipBar";
 import Badge from "../../components/Badge";
 import EmptyState from "../../components/EmptyState";
-import { money } from "../../lib/format";
+import { money, shortHash } from "../../lib/format";
 
 export default function PropertyDetail() {
   const { id } = useParams();
@@ -15,6 +15,7 @@ export default function PropertyDetail() {
   const [shareCount, setShareCount] = useState(1);
   const [error, setError] = useState(null);
   const [justRequested, setJustRequested] = useState(null);
+  const [justToken, setJustToken] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   if (!property) {
@@ -44,6 +45,7 @@ export default function PropertyDetail() {
       return;
     }
     setJustRequested(result.request);
+    setJustToken(result.token || null);
     setShareCount(1);
   };
 
@@ -109,22 +111,33 @@ export default function PropertyDetail() {
           {justRequested ? (
             <div className="card cardPad pdReceipt">
               <div className="pdReceiptIcon">✓</div>
-              <div className="pdReceiptTitle">Request submitted</div>
-              <div className="pdReceiptSub">Your request is awaiting team approval.</div>
+              <div className="pdReceiptTitle">Investment complete</div>
+              <div className="pdReceiptSub">
+                {justToken
+                  ? "Your shares are secured and your ownership token was minted on the Flux Chain — no approval needed."
+                  : "Your shares are secured. Your ownership certificate will appear in your portfolio."}
+              </div>
               <div className="pdReceiptRows">
-                <div><span>Shares requested</span><span>{justRequested.shares}</span></div>
+                <div><span>Shares acquired</span><span>{justRequested.shares}</span></div>
                 <div><span>Price per share</span><span>{money(justRequested.pricePerShare)}</span></div>
                 <div><span>Total cost</span><span className="dStrong">{money(justRequested.totalCost)}</span></div>
                 <div><span>Team fee ({justRequested.teamFeePct}%)</span><span>{money(justRequested.teamFeeAmount)}</span></div>
                 <div><span>Date</span><span>{justRequested.date} · {justRequested.time}</span></div>
+                {justToken && (
+                  <>
+                    <div><span>Token ID</span><span className="dMono">{justToken.tokenId}</span></div>
+                    <div><span>Block</span><span className="dMono">#{justToken.blockNumber}</span></div>
+                    <div><span>Block hash</span><span className="dMono">{shortHash(justToken.hash)}</span></div>
+                  </>
+                )}
               </div>
-              <Badge status="pending" />
+              <Badge status="approved" label="Completed" />
               <div className="pdReceiptActions">
-                <button className="btn btnPrimary btnBlock" onClick={() => setJustRequested(null)}>
-                  Submit another request
+                <button className="btn btnPrimary btnBlock" onClick={() => { setJustRequested(null); setJustToken(null); }}>
+                  Invest in another property
                 </button>
                 <button className="btn btnGhost btnBlock" onClick={() => navigate("/ledger")}>
-                  View my requests
+                  View tokens &amp; portfolio
                 </button>
               </div>
             </div>
@@ -163,15 +176,15 @@ export default function PropertyDetail() {
                 disabled={remaining <= 0 || paused || submitting}
               >
                 {submitting
-                  ? "Submitting…"
+                  ? "Investing…"
                   : paused
                     ? "Investing paused"
                     : remaining <= 0
                       ? "Fully subscribed"
-                      : "Submit for approval"}
+                      : "Invest now"}
               </button>
               <div className="pdDisclaimer">
-                Your request is reviewed by the team. No funds move until approved.
+                Your investment settles instantly — shares are sold to you immediately and your ownership token is minted on the Flux Chain.
               </div>
             </div>
           )}

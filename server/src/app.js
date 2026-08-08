@@ -7,6 +7,7 @@ import propertyRoutes from "./routes/properties.js";
 import requestRoutes from "./routes/requests.js";
 import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
+import tokenRoutes from "./routes/tokens.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/api/properties", propertyRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/tokens", tokenRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found." });

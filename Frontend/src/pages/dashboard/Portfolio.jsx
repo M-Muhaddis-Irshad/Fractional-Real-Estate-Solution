@@ -4,11 +4,13 @@ import { useApp } from "../../context/AppContext";
 import Stat from "../../components/Stat";
 import Badge from "../../components/Badge";
 import EmptyState from "../../components/EmptyState";
+import { TokenCard, TokenCertificate } from "../../components/TokenCertificate";
 import { money } from "../../lib/format";
 
 export default function Portfolio() {
-  const { holdings, transactions, purchaseRequests, portfolioTotals } = useApp();
+  const { holdings, transactions, purchaseRequests, portfolioTotals, tokens } = useApp();
   const [openTx, setOpenTx] = useState(null);
+  const [openToken, setOpenToken] = useState(null);
 
   const pending = purchaseRequests.filter((r) => r.status === "pending");
   const rejected = purchaseRequests.filter((r) => r.status === "rejected");
@@ -34,7 +36,7 @@ export default function Portfolio() {
 
       {empty ? (
         <div className="card">
-          <EmptyState icon="▤" title="Your ledger is blank" sub="Head to Discover and submit a purchase request to get started.">
+          <EmptyState icon="▤" title="Your ledger is blank" sub="Head to Discover — your first investment settles instantly.">
             <Link to="/discover" className="btn btnPrimary">Discover properties</Link>
           </EmptyState>
         </div>
@@ -88,6 +90,19 @@ export default function Portfolio() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </>
+          )}
+
+          {tokens.length > 0 && (
+            <>
+              <div className="sectionHeading">
+                My tokens <span className="dMuted">— minted on the Flux Chain</span>
+              </div>
+              <div className="tkGrid">
+                {tokens.map((t) => (
+                  <TokenCard key={t.id} token={t} onOpen={setOpenToken} />
+                ))}
               </div>
             </>
           )}
@@ -162,6 +177,8 @@ export default function Portfolio() {
               </div>
             ) : null
           )}
+
+          {openToken && <TokenCertificate token={openToken} onClose={() => setOpenToken(null)} />}
         </>
       )}
     </div>

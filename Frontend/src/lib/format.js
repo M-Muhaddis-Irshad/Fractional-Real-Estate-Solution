@@ -67,6 +67,12 @@ export function hueFrom(str) {
   return h;
 }
 
+export const shortHash = (h, head = 10, tail = 6) => {
+  const s = String(h || "");
+  if (!s) return "—";
+  return s.length <= head + tail ? s : `${s.slice(0, head)}…${s.slice(-tail)}`;
+};
+
 export function statusTone(status) {
   const map = {
     active: "success",

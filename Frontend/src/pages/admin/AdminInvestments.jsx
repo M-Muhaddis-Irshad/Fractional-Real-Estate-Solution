@@ -55,7 +55,7 @@ export default function AdminInvestments() {
               </thead>
               <tbody>
                 {pending.length === 0 && (
-                  <tr><td colSpan={7} className="tableEmpty">No pending requests — all caught up.</td></tr>
+                  <tr><td colSpan={7} className="tableEmpty">No pending requests — investments settle instantly.</td></tr>
                 )}
                 {pending.map((r) => (
                   <tr key={r.id}>

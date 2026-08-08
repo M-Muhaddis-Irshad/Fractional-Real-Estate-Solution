@@ -8,6 +8,7 @@ import PurchaseRequest from "../models/PurchaseRequest.js";
 import { getSettings } from "../models/Settings.js";
 import { connectDB } from "../config/db.js";
 import { nowParts } from "./format.js";
+import { mintTokens } from "./tokenchain.js";
 
 const SEED_PROPERTIES = [
   {
@@ -112,7 +113,7 @@ export async function seed() {
   const demo = [
     { name: "Alex Vance", email: "alex.vance@example.com", status: "active" },
     { name: "Sara Ahmed", email: "sara.ahmed@example.com", status: "active" },
-    { name: "Omar Farooq", email: "omar.farooq@example.com", status: "pending" },
+    { name: "Omar Farooq", email: "omar.farooq@example.com", status: "active" },
     { name: "Zainab Qureshi", email: "zainab.qureshi@example.com", status: "rejected" },
   ];
 
@@ -156,7 +157,7 @@ export async function seed() {
         });
         property.soldShares += shares;
         await property.save();
-        await Transaction.create({
+        const txn = await Transaction.create({
           userId: user._id,
           propertyId: property._id,
           propertyName: property.name,
@@ -169,44 +170,24 @@ export async function seed() {
           time,
           requestId: request._id,
         });
+        try {
+          await mintTokens({
+            user,
+            property,
+            shares,
+            pricePerShare: property.pricePerShare,
+            totalValue: totalCost,
+            requestId: request._id,
+            transactionId: txn._id,
+          });
+        } catch (err) {
+          console.error("[seed] token mint failed:", err.message);
+        }
         settings.teamEarnings += teamFeeAmount;
         await settings.save();
       }
     }
   }
-
-  // One pending request from a demo investor so approvals can be exercised.
-  const pendingUser = await User.findOne({ email: "omar.farooq@example.com" });
-  if (pendingUser) {
-    const hasPending = await PurchaseRequest.exists({
-      userId: pendingUser._id,
-      status: "pending",
-    });
-    if (!hasPending) {
-      const property = await Property.findOne({ name: "Hyderabad Logistics Hub" });
-      if (property) {
-        const settings = await getSettings();
-        const shares = 30;
-        const totalCost = shares * property.pricePerShare;
-        const teamFeeAmount = (totalCost * settings.teamFee) / 100;
-        const { date, time } = nowParts();
-        await PurchaseRequest.create({
-          userId: pendingUser._id,
-          propertyId: property._id,
-          propertyName: property.name,
-          shares,
-          pricePerShare: property.pricePerShare,
-          totalCost,
-          teamFeePct: settings.teamFee,
-          teamFeeAmount,
-          status: "pending",
-          date,
-          time,
-        });
-      }
-    }
-  }
-
   return { admin };
 }
 

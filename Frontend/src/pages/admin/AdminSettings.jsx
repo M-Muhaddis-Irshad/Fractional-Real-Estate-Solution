@@ -21,7 +21,7 @@ function buildForm(platform) {
     sessionTimeout: platform.sessionTimeout || "30",
     passwordMinLength: platform.passwordMinLength || "6",
     allowRegistration: platform.allowRegistration !== false,
-    requireApproval: platform.requireApproval !== false,
+    requireApproval: platform.requireApproval === true,
   };
 }
 
@@ -104,7 +104,7 @@ function SettingsBody({ platform, settings, users }) {
             <input type="checkbox" checked={form.requireApproval} onChange={set("requireApproval")} />
             <div>
               <div className="fieldLabel">Require admin approval</div>
-              <div className="fieldHint">New accounts must be approved before investing.</div>
+              <div className="fieldHint">When off (default), new accounts get instant access and purchases complete automatically.</div>
             </div>
           </label>
           <div className="aFormActions fieldFull">
