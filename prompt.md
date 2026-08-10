@@ -1,152 +1,59 @@
-I have added 3 UI reference images inside the project root under the following folder:
+TASK: Update Existing Real Estate Platform — Replace Images, Redesign UI, Add New "Our Story" Page
 
-/UI
-├── CoinBase Admin UI.png
-├── Landing Page UI.png
-└── Stripe Dashboard UI.png
+CONTEXT: This is an EXISTING, already-deployed project (Fractional Real Estate module). 
+Stack: React + Vite + Tailwind CSS + MUI (frontend), Node.js + Express (backend), MongoDB (database).
+Do NOT scaffold a new project. First scan the existing codebase structure (components, pages, routes, theme/config files) and identify:
+- Current image usage (placeholder text-based images, low-quality images, or hardcoded image URLs)
+- Current theme/styling setup (Tailwind config, MUI theme file, global CSS)
+- Current routing setup (React Router / Next.js routes) to know where to add the new page
 
-Your task is to redesign the entire application using these images as the design reference.
+=================================================================
+PART 1 — REPLACE EXISTING IMAGES (STRICT RULES)
+=================================================================
+- Find and replace ALL placeholder/text-based/low-quality images currently in the project with REAL, professional, high-resolution images.
+- Source from royalty-free professional stock libraries (Unsplash, Pexels, Pixabay) via their APIs or direct CDN links.
+- Images must be relevant to real estate: modern buildings, apartments, skylines, property interiors, investment/finance visuals, handshake/deal imagery, happy homeowners, etc.
+- STRICTLY AVOID: cartoonish images, clipart, watermarked stock photos, low-resolution/pixelated images, generic clichés, or anything unprofessional.
+- Keep consistent aspect ratios, optimize images (WebP where possible), and add lazy loading.
+- Add proper alt text to every image for accessibility/SEO.
+- Preserve existing image component structure where possible — just swap the source, don't break layouts.
 
-Design Requirements
-Use Landing Page UI.png as the reference for the public landing page.
-Use Stripe Dashboard UI.png as the reference for the User Dashboard.
-Use CoinBase Admin UI.png as the reference for the Admin Dashboard.
-Replicate the overall layout, spacing, typography, colors, cards, navigation, responsiveness, and professional feel as closely as possible (do not copy assets or copyrighted graphics).
-The final UI should look modern, premium, clean, and production-ready.
-Authentication
+=================================================================
+PART 2 — UPDATE/REDESIGN EXISTING UI (PROFESSIONAL STANDARD)
+=================================================================
+Update the CURRENT UI (do not rebuild from scratch) to feel like a premium fintech/proptech product (DAO PropTech / PropertyShare-level polish):
+- Review and refine the existing color palette, typography scale, spacing, and border-radius/shadow conventions — update the Tailwind config / MUI theme file centrally so changes apply site-wide.
+- Restyle existing MUI components via the theme/Tailwind overrides so they no longer look like default MUI — no default blue buttons, no generic Material look.
+- Audit and fix responsiveness issues across mobile, tablet, and desktop breakpoints.
+- Improve the existing navbar (sticky/clean, clear CTAs like "Invest Now", "List Your Property") and footer (organized sitemap links) — modify existing components, don't duplicate them.
+- Add smooth micro-interactions (hover states, transitions, loading skeletons) to existing interactive elements.
+- Maintain accessibility (contrast ratios, keyboard nav, ARIA labels).
+- Apply changes consistently across ALL existing pages, not just new ones — check for style drift/inconsistency between pages.
 
-Update the authentication flow.
+=================================================================
+PART 3 — ADD NEW "OUR STORY" / ABOUT PAGE (6–7 SECTIONS)
+=================================================================
+Create a new page/route (e.g., /our-story or /about) following the existing project's routing and component conventions. Add a link to it in the existing navbar and footer. Sections:
 
-On the Login/Signup page, add an additional option:
+1. **Who We Are** — Platform intro, mission, what makes us different in fractional real estate investment.
+2. **Our Purpose** — Why this platform exists (high entry barriers, lack of transparency, illiquidity of real estate, etc.)
+3. **Our Roadmap** — Visual timeline (past milestones → current phase → future plans: new cities, new asset classes, mobile app, secondary market). Use a timeline/stepper component.
+4. **How to Buy/Sell Property (Step-by-Step)**:
+   - Buying: Sign up → KYC verification → Browse listings → Invest in fractions → Track ownership/returns → Exit/resell shares
+   - Selling: List property → Verification & valuation → Fractionalization → Go live → Track investor funding
+   Use icons/illustrations per step.
+5. **Benefits for Users** — Grid/card layout: low minimum investment, diversification, passive rental income, transparency, liquidity via secondary market, professional property management, etc.
+6. **Terms & Policies** — Summarized key points (risk disclosure, ownership rights, fees, exit policy) + link to full Terms & Conditions/Privacy Policy page.
+7. **Customer Care / Support** — Contact options (live chat, email, phone), FAQs link, support hours, commitment to support.
 
-Sign in as Admin
+Design notes:
+- Alternate layout per section (image-left/text-right, then reversed) for visual rhythm.
+- Use real, high-quality images matching each section's theme.
+- End with a strong CTA section ("Ready to invest?" / "List your property today").
+- Match the new page's styling to the updated global theme from Part 2 — it should look native to the site, not bolted on.
 
-Requirements:
-
-Normal users continue using the existing authentication flow.
-Admins have a separate login flow.
-Admin authentication should redirect only to the Admin Dashboard.
-Prevent normal users from accessing admin routes.
-Protect all admin pages with proper route guards.
-Separate Admin Dashboard
-
-Create a completely separate Admin Panel.
-
-This should not reuse the user dashboard.
-
-The Admin Dashboard should allow administrators to monitor and manage the entire platform.
-
-Include professional pages/components such as:
-
-Dashboard Overview
-Total Users
-Total Admins
-Total Properties
-Total Fractional Properties
-Total Investments
-Total Revenue
-Active Listings
-Pending Approvals
-Recent Activity
-Analytics Charts
-Platform Statistics
-Property Management
-View all properties
-Add/Edit/Delete properties
-Approve/Reject listings
-Featured properties
-Property status management
-Fractional Ownership Management
-Create fractional offerings
-Configure share price
-Total shares
-Sold shares
-Remaining shares
-Pause/Resume investments
-Investment analytics
-User Management
-View all users
-Search users
-Suspend/Activate accounts
-Assign admin roles
-View user investments
-User activity history
-Investment Management
-View all investments
-Pending transactions
-Completed investments
-Cancelled transactions
-Earnings reports
-Financial Dashboard
-Revenue analytics
-Investment trends
-Platform earnings
-Commission tracking
-Withdrawals
-Transaction history
-Content Management
-Homepage content
-Hero banners
-Testimonials
-FAQ
-Blog (if applicable)
-Notifications
-Send announcements
-Push notifications
-Email notifications
-Settings
-Platform settings
-General configuration
-Payment settings
-Security settings
-Admin profile
-Roles & Permissions
-Logs
-Login history
-Admin activity logs
-Error logs
-Audit trail
-User Dashboard
-
-Redesign the existing user dashboard using Stripe Dashboard UI.png while keeping all current functionality intact.
-
-Improve:
-
-Dashboard overview
-Investment portfolio
-Owned shares
-Earnings
-Wallet
-Transactions
-Profile
-Settings
-Charts
-Tables
-Cards
-Responsive layout
-Landing Page
-
-Redesign the entire landing page using Landing Page UI.png while preserving all existing functionality.
-
-Keep:
-
-Hero Section
-Property Listings
-Fractional Investment Section
-Features
-CTA
-Footer
-
-Upgrade the UI to match the reference's quality and spacing.
-
-General Requirements
-Do not break any existing backend functionality.
-Preserve all API integrations and business logic.
-Refactor components where necessary.
-Make the code clean, reusable, and modular.
-Ensure full responsiveness for desktop, tablet, and mobile.
-Use smooth animations and transitions.
-Maintain consistent spacing, typography, colors, and component styling throughout the application.
-Follow production-level best practices.
-
-Important: Complete the redesign while preserving existing functionality. The application should feel like a polished SaaS platform with distinct experiences for public users, authenticated users, and administrators.
+=================================================================
+PART 4 — FINAL DELIVERABLE
+=================================================================
+- Test responsiveness across breakpoints, confirm no broken images/links, confirm no existing functionality was broken during the update.
+- Provide a final summary of everything changed/added, written in Roman Urdu, explaining simply what was done in each part (image replacements, UI redesign, new Our Story page and its 7 sections).

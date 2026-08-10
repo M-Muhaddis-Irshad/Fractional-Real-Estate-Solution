@@ -11,8 +11,13 @@ export default function PropertyCard({ property, footer }) {
     : { background: `linear-gradient(135deg, hsl(${property.hue} 45% 30%), hsl(${(property.hue + 50) % 360} 45% 18%))` };
 
   return (
-    <Link to={`/property/${property.id}`} className="propCard">
-      <div className="propThumb" style={thumbStyle}>
+    <Link to={`/property/${property.id}`} className="propCard" aria-label={`${property.name} — invest in fractional shares`}>
+      <div
+        className="propThumb"
+        style={thumbStyle}
+        role="img"
+        aria-label={property.imageUrl ? `${property.name} in ${property.city}` : `${property.name} — placeholder`}
+      >
         {!property.imageUrl && <span className="propThumbInitials">{property.initials}</span>}
         <div className="propThumbTop">
           <span className="propYield">▲ {property.yieldPct}% APY</span>

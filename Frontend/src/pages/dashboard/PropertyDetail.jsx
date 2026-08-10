@@ -1,15 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import OwnershipBar from "../../components/OwnershipBar";
 import Badge from "../../components/Badge";
 import EmptyState from "../../components/EmptyState";
-import { money, shortHash } from "../../lib/format";
+import { money, shortHash, cryptoFmt } from "../../lib/format";
+
+const CRYPTO_CURRENCIES = ["BTC", "ETH", "USDC", "USDT"];
+
+const CRYPTO_STEP = [
+  { key: "pending", label: "Awaiting payment" },
+  { key: "confirming", label: "Confirming on-chain" },
+  { key: "confirmed", label: "Confirmed" },
+];
 
 export default function PropertyDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { properties, requestInvestment, teamFee } = useApp();
+  const {
+    properties,
+    requestInvestment,
+    createCryptoPayment,
+    getCryptoPaymentStatus,
+    getCryptoRates,
+    teamFee,
+  } = useApp();
   const property = properties.find((p) => p.id === id);
 
   const [shareCount, setShareCount] = useState(1);
@@ -17,6 +32,45 @@ export default function PropertyDetail() {
   const [justRequested, setJustRequested] = useState(null);
   const [justToken, setJustToken] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Crypto payment state
+  const [payMethod, setPayMethod] = useState("instant"); // "instant" | "crypto"
+  const [cryptoCurrency, setCryptoCurrency] = useState("BTC");
+  const [cryptoRates, setCryptoRates] = useState(null);
+  const [cryptoPayment, setCryptoPayment] = useState(null);
+  const [cryptoResult, setCryptoResult] = useState(null); // { request, transaction, token }
+  const [cryptoError, setCryptoError] = useState(null);
+  const [cryptoBusy, setCryptoBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    getCryptoRates().then(setCryptoRates).catch(() => {});
+  }, [getCryptoRates]);
+
+  // Poll payment status until it reaches a terminal state.
+  useEffect(() => {
+    const idStr = cryptoPayment?.id;
+    const status = cryptoPayment?.status;
+    if (!idStr || ["confirmed", "failed", "expired"].includes(status)) return;
+
+    const timer = setInterval(async () => {
+      try {
+        const data = await getCryptoPaymentStatus(idStr);
+        setCryptoPayment(data.payment);
+        if (data.payment.status === "confirmed") {
+          setCryptoResult({
+            request: data.request || null,
+            transaction: data.transaction || null,
+            token: data.token || null,
+          });
+        }
+      } catch {
+        /* keep polling */
+      }
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [cryptoPayment?.id, cryptoPayment?.status, getCryptoPaymentStatus]);
 
   if (!property) {
     return (
@@ -49,9 +103,46 @@ export default function PropertyDetail() {
     setShareCount(1);
   };
 
+  const handleCryptoSubmit = async () => {
+    setCryptoError(null);
+    setCryptoBusy(true);
+    try {
+      const data = await createCryptoPayment(property.id, shareCount, cryptoCurrency);
+      setCryptoPayment(data.payment);
+    } catch (err) {
+      setCryptoError(err.message);
+    } finally {
+      setCryptoBusy(false);
+    }
+  };
+
+  const resetCrypto = () => {
+    setCryptoPayment(null);
+    setCryptoResult(null);
+    setCryptoError(null);
+  };
+
+  const copyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(cryptoPayment.walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
+
+  const estAmount = cryptoRates ? cost / (cryptoRates.rates[cryptoCurrency] || 1) : null;
+  const cryptoStatus = cryptoPayment?.status;
+  const stepIdx = cryptoStatus === "confirmed" ? 2 : cryptoStatus === "confirming" ? 1 : 0;
+  const showSteps = ["pending", "confirming", "confirmed"].includes(cryptoStatus);
+
   const thumbStyle = property.imageUrl
     ? { backgroundImage: `url(${property.imageUrl})` }
     : { background: `linear-gradient(135deg, hsl(${property.hue} 45% 32%), hsl(${(property.hue + 50) % 360} 45% 18%))` };
+
+  const receipt = justRequested || (cryptoStatus === "confirmed" && cryptoResult?.request);
+  const receiptToken = cryptoStatus === "confirmed" ? cryptoResult?.token : justToken;
 
   return (
     <div className="riseIn">
@@ -59,7 +150,12 @@ export default function PropertyDetail() {
 
       <div className="pdGrid">
         <div className="pdMain">
-          <div className="pdThumb" style={thumbStyle}>
+          <div
+            className="pdThumb"
+            style={thumbStyle}
+            role="img"
+            aria-label={property.imageUrl ? `${property.name} in ${property.city}` : `${property.name} — placeholder`}
+          >
             {!property.imageUrl && <span className="pdThumbInitials">{property.initials}</span>}
             <div className="pdThumbBadges">
               {property.featured && <Badge status="active" label="★ Featured" />}
@@ -108,38 +204,168 @@ export default function PropertyDetail() {
         </div>
 
         <aside className="pdPanel">
-          {justRequested ? (
+          {receipt && !cryptoPayment ? (
             <div className="card cardPad pdReceipt">
               <div className="pdReceiptIcon">✓</div>
               <div className="pdReceiptTitle">Investment complete</div>
               <div className="pdReceiptSub">
-                {justToken
+                {receiptToken
                   ? "Your shares are secured and your ownership token was minted on the Flux Chain — no approval needed."
                   : "Your shares are secured. Your ownership certificate will appear in your portfolio."}
               </div>
               <div className="pdReceiptRows">
-                <div><span>Shares acquired</span><span>{justRequested.shares}</span></div>
-                <div><span>Price per share</span><span>{money(justRequested.pricePerShare)}</span></div>
-                <div><span>Total cost</span><span className="dStrong">{money(justRequested.totalCost)}</span></div>
-                <div><span>Team fee ({justRequested.teamFeePct}%)</span><span>{money(justRequested.teamFeeAmount)}</span></div>
-                <div><span>Date</span><span>{justRequested.date} · {justRequested.time}</span></div>
-                {justToken && (
+                <div><span>Shares acquired</span><span>{receipt.shares}</span></div>
+                <div><span>Price per share</span><span>{money(receipt.pricePerShare)}</span></div>
+                <div><span>Total cost</span><span className="dStrong">{money(receipt.totalCost ?? receipt.total)}</span></div>
+                {receipt.teamFeePct != null && (
+                  <div><span>Team fee ({receipt.teamFeePct}%)</span><span>{money(receipt.teamFeeAmount)}</span></div>
+                )}
+                {receipt.date && (
+                  <div><span>Date</span><span>{receipt.date} · {receipt.time}</span></div>
+                )}
+                {receiptToken && (
                   <>
-                    <div><span>Token ID</span><span className="dMono">{justToken.tokenId}</span></div>
-                    <div><span>Block</span><span className="dMono">#{justToken.blockNumber}</span></div>
-                    <div><span>Block hash</span><span className="dMono">{shortHash(justToken.hash)}</span></div>
+                    <div><span>Token ID</span><span className="dMono">{receiptToken.tokenId}</span></div>
+                    <div><span>Block</span><span className="dMono">#{receiptToken.blockNumber}</span></div>
+                    <div><span>Block hash</span><span className="dMono">{shortHash(receiptToken.hash)}</span></div>
                   </>
                 )}
               </div>
               <Badge status="approved" label="Completed" />
               <div className="pdReceiptActions">
-                <button className="btn btnPrimary btnBlock" onClick={() => { setJustRequested(null); setJustToken(null); }}>
+                <button className="btn btnPrimary btnBlock" onClick={() => { setJustRequested(null); setJustToken(null); resetCrypto(); }}>
                   Invest in another property
                 </button>
                 <button className="btn btnGhost btnBlock" onClick={() => navigate("/ledger")}>
                   View tokens &amp; portfolio
                 </button>
               </div>
+            </div>
+          ) : cryptoPayment ? (
+            <div className="card cardPad">
+              {cryptoStatus === "confirmed" ? (
+                <div className="pdReceipt">
+                  <div className="pdReceiptIcon">✓</div>
+                  <div className="pdReceiptTitle">Crypto payment confirmed</div>
+                  <div className="pdReceiptSub">
+                    {cryptoResult?.token
+                      ? "Your shares are secured and your ownership token was minted on the Flux Chain."
+                      : "Your shares are secured. Your ownership certificate will appear in your portfolio."}
+                  </div>
+                  <div className="pdReceiptRows">
+                    <div><span>Shares acquired</span><span>{cryptoPayment.shares}</span></div>
+                    <div><span>Price per share</span><span>{money(cryptoPayment.pricePerShare)}</span></div>
+                    <div><span>Total cost</span><span className="dStrong">{money(cryptoPayment.totalUsd)}</span></div>
+                    <div><span>Paid in</span><span>{cryptoFmt(cryptoPayment.cryptoAmount, cryptoPayment.currency)}</span></div>
+                    {cryptoPayment.txHash && (
+                      <div>
+                        <span>Tx hash</span>
+                        {cryptoPayment.explorerUrl ? (
+                          <a className="cryptoExplorer" href={cryptoPayment.explorerUrl} target="_blank" rel="noreferrer">
+                            {shortHash(cryptoPayment.txHash, 8, 6)} ↗
+                          </a>
+                        ) : (
+                          <span className="dMono">{shortHash(cryptoPayment.txHash)}</span>
+                        )}
+                      </div>
+                    )}
+                    {cryptoResult?.token && (
+                      <>
+                        <div><span>Token ID</span><span className="dMono">{cryptoResult.token.tokenId}</span></div>
+                        <div><span>Block</span><span className="dMono">#{cryptoResult.token.blockNumber}</span></div>
+                        <div><span>Block hash</span><span className="dMono">{shortHash(cryptoResult.token.hash)}</span></div>
+                      </>
+                    )}
+                  </div>
+                  <Badge status="approved" label="Completed" />
+                  <div className="pdReceiptActions">
+                    <button className="btn btnPrimary btnBlock" onClick={() => { resetCrypto(); setShareCount(1); }}>
+                      Invest in another property
+                    </button>
+                    <button className="btn btnGhost btnBlock" onClick={() => navigate("/ledger")}>
+                      View tokens &amp; portfolio
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="cryptoPay">
+                  <div className="pdReceiptIcon cryptoPayIcon">
+                    {cryptoPayment.currency === "BTC" ? "₿" : "◈"}
+                  </div>
+                  <div className="pdReceiptTitle">
+                    {cryptoStatus === "failed"
+                      ? "Payment failed"
+                      : cryptoStatus === "expired"
+                        ? "Payment expired"
+                        : "Complete your crypto payment"}
+                  </div>
+                  <div className="pdReceiptSub">
+                    {cryptoPayment.demo
+                      ? "Demo mode — no gateway configured. Pay the exact demo amount below; it auto-confirms in ~20 seconds."
+                      : "Send the exact amount to the checkout to finalise your investment."}
+                  </div>
+
+                  {showSteps && (
+                    <div className="cryptoSteps" aria-label={`Payment status: ${cryptoStatus}`}>
+                      {CRYPTO_STEP.map((s, i) => (
+                        <div
+                          key={s.key}
+                          className={
+                            "cryptoStep" +
+                            (i < stepIdx ? " cryptoStepDone" : "") +
+                            (i === stepIdx ? " cryptoStepActive" : "")
+                          }
+                        >
+                          <span className="cryptoStepDot">
+                            {i < stepIdx ? "✓" : i + 1}
+                          </span>
+                          <span className="cryptoStepLabel">{s.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="pdReceiptRows">
+                    <div><span>Shares</span><span>{cryptoPayment.shares}</span></div>
+                    <div><span>Total (USD)</span><span className="dStrong">{money(cryptoPayment.totalUsd)}</span></div>
+                    <div>
+                      <span>Amount ({cryptoPayment.currency})</span>
+                      <span className="cryptoAmount">{cryptoFmt(cryptoPayment.cryptoAmount, cryptoPayment.currency)}</span>
+                    </div>
+                  </div>
+
+                  {cryptoPayment.hostedUrl ? (
+                    <a
+                      className="btn btnPrimary btnBlock btnLg"
+                      href={cryptoPayment.hostedUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open hosted checkout ↗
+                    </a>
+                  ) : cryptoPayment.walletAddress ? (
+                    <div className="cryptoAddr">
+                      <span className="cryptoAddrLabel">Send to this {cryptoPayment.currency} address</span>
+                      <div className="cryptoAddrRow">
+                        <code className="cryptoAddrCode">{cryptoPayment.walletAddress}</code>
+                        <button className="btn btnGhost cryptoCopyBtn" onClick={copyAddress}>
+                          {copied ? "Copied ✓" : "Copy"}
+                        </button>
+                      </div>
+                      <div className="cryptoAddrNote">
+                        Send exactly {cryptoFmt(cryptoPayment.cryptoAmount, cryptoPayment.currency)} — amounts above
+                        or below are flagged as delayed by the gateway.
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {(cryptoStatus === "failed" || cryptoStatus === "expired") && (
+                    <button className="btn btnPrimary btnBlock" onClick={resetCrypto}>
+                      Try again
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="card cardPad">
@@ -168,24 +394,89 @@ export default function PropertyDetail() {
                 <div><span>Resulting ownership</span><span>{ownPct}%</span></div>
               </div>
 
-              {error && <div className="errorText pdError">{error}</div>}
-
-              <button
-                className={"btn btnPrimary btnBlock btnLg" + (remaining <= 0 || paused ? " dDisabled" : "")}
-                onClick={handleSubmit}
-                disabled={remaining <= 0 || paused || submitting}
-              >
-                {submitting
-                  ? "Investing…"
-                  : paused
-                    ? "Investing paused"
-                    : remaining <= 0
-                      ? "Fully subscribed"
-                      : "Invest now"}
-              </button>
-              <div className="pdDisclaimer">
-                Your investment settles instantly — shares are sold to you immediately and your ownership token is minted on the Flux Chain.
+              <span className="pdPanelLabel">Payment method</span>
+              <div className="payMethodGrid">
+                <button
+                  type="button"
+                  className={"payMethodCard" + (payMethod === "instant" ? " payMethodActive" : "")}
+                  onClick={() => setPayMethod("instant")}
+                >
+                  <span className="payMethodIcon">⚡</span>
+                  <span className="payMethodTitle">Instant settlement</span>
+                  <span className="payMethodSub">Demo — settles immediately</span>
+                </button>
+                <button
+                  type="button"
+                  className={"payMethodCard" + (payMethod === "crypto" ? " payMethodActive" : "")}
+                  onClick={() => setPayMethod("crypto")}
+                >
+                  <span className="payMethodIcon">₿</span>
+                  <span className="payMethodTitle">Pay with crypto</span>
+                  <span className="payMethodSub">BTC · ETH · USDC · USDT</span>
+                </button>
               </div>
+
+              {payMethod === "instant" ? (
+                <>
+                  {error && <div className="errorText pdError">{error}</div>}
+
+                  <button
+                    className={"btn btnPrimary btnBlock btnLg" + (remaining <= 0 || paused ? " dDisabled" : "")}
+                    onClick={handleSubmit}
+                    disabled={remaining <= 0 || paused || submitting}
+                  >
+                    {submitting
+                      ? "Investing…"
+                      : paused
+                        ? "Investing paused"
+                        : remaining <= 0
+                          ? "Fully subscribed"
+                          : "Invest now"}
+                  </button>
+                  <div className="pdDisclaimer">
+                    Your investment settles instantly — shares are sold to you immediately and your ownership token is minted on the Flux Chain.
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="pdPanelLabel">Cryptocurrency</span>
+                  <div className="cryptoChips">
+                    {CRYPTO_CURRENCIES.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={"cryptoChip" + (cryptoCurrency === c ? " cryptoChipActive" : "")}
+                        onClick={() => setCryptoCurrency(c)}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+
+                  {estAmount != null && (
+                    <div className="cryptoEstimate">
+                      ≈ {cryptoFmt(estAmount, cryptoCurrency)}{" "}
+                      <span className="cryptoEstimateSub">
+                        ({cryptoRates?.simulated ? "demo rate" : "live rate"} · {money(cost)})
+                      </span>
+                    </div>
+                  )}
+
+                  {cryptoError && <div className="errorText pdError">{cryptoError}</div>}
+
+                  <button
+                    className={"btn btnPrimary btnBlock btnLg" + (remaining <= 0 || paused ? " dDisabled" : "")}
+                    onClick={handleCryptoSubmit}
+                    disabled={remaining <= 0 || paused || cryptoBusy}
+                  >
+                    {cryptoBusy ? "Creating payment…" : `Pay with ${cryptoCurrency}`}
+                  </button>
+                  <div className="pdDisclaimer">
+                    Payments are processed through Coinbase Commerce. Your shares settle and your token is
+                    minted once the network confirms the transaction.
+                  </div>
+                </>
+              )}
             </div>
           )}
         </aside>

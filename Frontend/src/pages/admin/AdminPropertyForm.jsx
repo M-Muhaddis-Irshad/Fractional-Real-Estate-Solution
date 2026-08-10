@@ -11,6 +11,7 @@ const EMPTY = {
   pricePerShare: "",
   totalShares: "",
   yieldPct: "",
+  imageUrl: "",
 };
 
 function fromProperty(p) {
@@ -23,6 +24,7 @@ function fromProperty(p) {
     pricePerShare: p.pricePerShare,
     totalShares: p.totalShares,
     yieldPct: p.yieldPct,
+    imageUrl: p.imageUrl || "",
   };
 }
 
@@ -39,6 +41,10 @@ function PropertyFormBody({ initial, editingId, onDone }) {
     setError(null);
 
     const { name, city, description, totalValue, pricePerShare, totalShares, yieldPct } = form;
+    if (form.imageUrl && !/^https?:\/\//i.test(form.imageUrl.trim())) {
+      setError("Image URL must start with http:// or https://");
+      return;
+    }
     if (!name.trim() || !city.trim() || !description.trim()) {
       setError("Please fill in all text fields.");
       return;
@@ -98,6 +104,11 @@ function PropertyFormBody({ initial, editingId, onDone }) {
         <label className="field">
           <span className="fieldLabel">Projected annual yield (%)</span>
           <input className="input" type="number" step="0.1" min="0.1" value={form.yieldPct} onChange={set("yieldPct")} placeholder="e.g. 8.5" />
+        </label>
+        <label className="field" style={{ gridColumn: "1 / -1" }}>
+          <span className="fieldLabel">Image URL (optional)</span>
+          <input className="input" value={form.imageUrl} onChange={set("imageUrl")} placeholder="https://images.unsplash.com/photo-…?auto=format&fit=crop&w=1400&q=80" />
+          <span className="fieldHint">Paste a direct link to a high-resolution photo (Unsplash, Pexels, etc.). If empty, a branded gradient placeholder is used.</span>
         </label>
       </div>
       <label className="field" style={{ marginTop: 16 }}>

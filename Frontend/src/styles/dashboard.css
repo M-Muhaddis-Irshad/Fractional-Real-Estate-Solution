@@ -726,6 +726,216 @@
   margin-top: 16px;
 }
 
+/* ---------- Crypto checkout ---------- */
+.payMethodGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.payMethodCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 13px;
+  padding: 13px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.payMethodCard:hover {
+  border-color: var(--brand-border);
+  transform: translateY(-1px);
+}
+.payMethodCard.payMethodActive {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+.payMethodIcon {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+.payMethodTitle {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.payMethodSub {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.cryptoChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.cryptoChip {
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.cryptoChip:hover {
+  border-color: var(--brand-border);
+  color: var(--ink);
+}
+.cryptoChip.cryptoChipActive {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 3px 10px var(--glow);
+}
+.cryptoEstimate {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: -4px 0 12px;
+}
+.cryptoEstimateSub {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.cryptoPayIcon {
+  background: linear-gradient(135deg, var(--brand), #f59e0b);
+  color: #fff;
+}
+.cryptoSteps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 4px 0 16px;
+}
+.cryptoStep {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+.cryptoStep:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border-strong);
+  z-index: 0;
+}
+.cryptoStep.cryptoStepDone:not(:last-child)::after {
+  background: var(--success);
+}
+.cryptoStepDot {
+  position: relative;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 2px solid var(--border-strong);
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cryptoStep.cryptoStepDone .cryptoStepDot {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+.cryptoStep.cryptoStepActive .cryptoStepDot {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  box-shadow: 0 0 0 4px var(--glow);
+}
+.cryptoStepLabel {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.3;
+}
+.cryptoStep.cryptoStepActive .cryptoStepLabel {
+  color: var(--ink);
+}
+
+.cryptoAmount {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--brand);
+}
+.cryptoAddr {
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 4px;
+}
+.cryptoAddrLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.cryptoAddrRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cryptoAddrCode {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink);
+  word-break: break-all;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.cryptoCopyBtn {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  padding: 8px 12px;
+}
+.cryptoAddrNote {
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--faint);
+  line-height: 1.5;
+}
+.cryptoExplorer {
+  color: var(--brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+.cryptoExplorer:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 420px) {
+  .payMethodGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Receipt (ledger) */
 .dReceiptBtn {
   background: var(--surface-2);
@@ -962,6 +1172,22 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+.authForgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+.authForgotRow a {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+.authForgotRow a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
 }
 .authCheck {
   display: flex;
@@ -1247,4 +1473,307 @@
 .tkVerifyBad {
   background: var(--danger-soft);
   color: var(--danger);
+}
+
+/* ============================================================
+   Onboarding welcome modal (first-login carousel)
+   ============================================================ */
+.onbOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400; /* above navbar, sidebar, and all page content */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(7, 10, 20, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.2s ease;
+}
+.onbOverlay.onbClosing {
+  animation: fadeOut 0.18s ease forwards;
+}
+.onbModal {
+  width: 100%;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: 0 24px 70px rgba(5, 8, 18, 0.45);
+  overflow: hidden;
+  position: relative;
+  animation: onbIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.onbOverlay.onbClosing .onbModal {
+  animation: onbOut 0.18s ease forwards;
+}
+
+/* Close button — floating over the image, top-right like the reference. */
+.onbClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.55);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.onbClose:hover {
+  background: rgba(15, 23, 42, 0.8);
+  transform: scale(1.06);
+}
+
+/* Carousel viewport + track (translateX transitions between slides). */
+.onbViewport {
+  overflow: hidden;
+}
+.onbTrack {
+  display: flex;
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.onbSlide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top image section — light gradient + photo, per the reference. */
+.onbMedia {
+  position: relative;
+  height: 208px;
+  background: linear-gradient(135deg, var(--brand-2), var(--accent));
+  overflow: hidden;
+}
+.onbMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.onbMediaShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.12), rgba(15, 23, 42, 0.42));
+}
+
+/* Text body. */
+.onbBody {
+  padding: 24px 26px 6px;
+  text-align: center;
+}
+.onbEyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+.onbTitle {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.onbText {
+  margin-top: 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* Numbered steps (How it works / Buy-sell flow). */
+.onbSteps {
+  list-style: none;
+  margin: 16px auto 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+  max-width: 300px;
+  text-align: left;
+}
+.onbSteps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.onbStepNum {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+/* Benefit chips. */
+.onbChips {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.onbChip {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+
+/* Footer — dots + actions. */
+.onbFoot {
+  padding: 18px 26px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.onbDots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.onbDot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 999px;
+  background: var(--surface-3);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.18s ease, transform 0.18s ease, width 0.18s ease;
+}
+.onbDot:hover {
+  background: var(--border-strong);
+  transform: scale(1.15);
+}
+.onbDotActive {
+  width: 22px;
+  background: var(--brand);
+}
+.onbActions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.onbSkip {
+  border: none;
+  background: transparent;
+  color: var(--faint);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 4px;
+  transition: color 0.15s ease;
+}
+.onbSkip:hover {
+  color: var(--muted);
+}
+.onbArrow {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.onbArrow:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  box-shadow: var(--shadow-sm);
+}
+.onbNext {
+  min-width: 150px;
+  font-size: 13.5px;
+  border-radius: var(--radius-m);
+  padding: 11px 20px;
+}
+
+@keyframes onbIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes onbOut {
+  to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Mobile — keep the modal compact and swipeable. */
+@media (max-width: 640px) {
+  .onbOverlay {
+    padding: 14px;
+    align-items: flex-end;
+  }
+  .onbModal {
+    max-width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 18px 18px;
+  }
+  .onbMedia {
+    height: 168px;
+  }
+  .onbBody {
+    padding: 20px 20px 4px;
+  }
+  .onbTitle {
+    font-size: 19px;
+  }
+  .onbFoot {
+    padding: 14px 20px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onbOverlay,
+  .onbModal,
+  .onbOverlay.onbClosing,
+  .onbOverlay.onbClosing .onbModal {
+    animation: none;
+  }
+  .onbTrack {
+    transition: none;
+  }
 }

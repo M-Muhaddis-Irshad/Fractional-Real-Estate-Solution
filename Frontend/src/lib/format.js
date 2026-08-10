@@ -4,6 +4,16 @@ export const money = (n) =>
 export const moneyCents = (n) =>
   "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+export const cryptoFmt = (n, currency = "") => {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return "—";
+  const digits = currency === "BTC" ? 6 : currency === "ETH" ? 4 : 2;
+  return (
+    v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: digits }) +
+    (currency ? ` ${currency}` : "")
+  );
+};
+
 export const moneyShort = (n) => {
   const abs = Math.abs(n);
   if (abs >= 1e9) return "$" + (n / 1e9).toFixed(1).replace(/\.0$/, "") + "B";

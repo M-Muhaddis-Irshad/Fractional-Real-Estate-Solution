@@ -37,6 +37,11 @@ export function AppProvider({ children }) {
   const [toast, setToast] = useState(null);
   const [theme, setTheme] = useState(() => loadJSON("theme", "light"));
 
+  // Onboarding welcome modal — shown after a successful login/registration for
+  // users who have not yet seen it. The "seen" flag lives in MongoDB
+  // (user.hasSeenOnboarding) so it persists across devices, not just localStorage.
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+
   useEffect(() => {
     saveJSON("theme", theme);
   }, [theme]);
@@ -236,6 +241,8 @@ export function AppProvider({ children }) {
     });
     setToken(data.token);
     setUser(data.user);
+    // First-ever login → show the onboarding welcome modal (DB flag: false).
+    if (data.user && !data.user.hasSeenOnboarding) setOnboardingOpen(true);
     notify(`Welcome back, ${data.user.name}.`, "success");
     return { ok: true, user: data.user };
   }
@@ -260,6 +267,8 @@ export function AppProvider({ children }) {
     });
     setToken(data.token);
     setUser(data.user);
+    // New accounts have never seen onboarding → welcome them with the modal.
+    if (data.user && !data.user.hasSeenOnboarding) setOnboardingOpen(true);
     notify(`Account created. Welcome, ${data.user.name}.`, "success");
     return { ok: true, user: data.user };
   }
@@ -315,6 +324,35 @@ export function AppProvider({ children }) {
     }
   }
 
+  /* ---------------- Crypto payments ---------------- */
+
+  async function createCryptoPayment(propertyId, shares, currency) {
+    const data = await api("/payments/crypto/create", {
+      method: "POST",
+      body: { propertyId, shares, currency },
+    });
+    return data;
+  }
+
+  async function getCryptoPaymentStatus(id) {
+    return api(`/payments/crypto/status/${id}`);
+  }
+
+  async function getCryptoRates() {
+    return api("/payments/crypto/rates", { auth: false });
+  }
+
+  /** Close the onboarding modal and persist the "seen" flag to the DB. */
+  async function dismissOnboarding() {
+    setOnboardingOpen(false);
+    try {
+      const res = await api("/users/onboarding-complete", { method: "PATCH" });
+      if (res.user) setUser((prev) => (prev ? { ...prev, hasSeenOnboarding: true } : prev));
+    } catch {
+      // Non-critical — worst case the modal shows once more next login.
+    }
+  }
+
   async function markNotificationRead(id) {
     try {
       await api(`/users/notifications/${id}/read`, { method: "POST" });
@@ -348,7 +386,12 @@ export function AppProvider({ children }) {
     register,
     logout,
     requestInvestment,
+    createCryptoPayment,
+    getCryptoPaymentStatus,
+    getCryptoRates,
     markNotificationRead,
+    onboardingOpen,
+    dismissOnboarding,
     theme,
     toggleTheme,
     toast,

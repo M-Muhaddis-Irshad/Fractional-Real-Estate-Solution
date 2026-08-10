@@ -749,6 +749,12 @@ router.post("/properties", uploadImage.single("image"), async (req, res, next) =
       const result = await uploadBuffer(req.file.buffer, { folder: "flux/properties" });
       imageUrl = result.secure_url;
       imagePublicId = result.public_id;
+    } else if (data.imageUrl && String(data.imageUrl).trim()) {
+      const provided = String(data.imageUrl).trim();
+      if (!/^https?:\/\//i.test(provided)) {
+        return res.status(400).json({ error: "Image URL must start with http:// or https://" });
+      }
+      imageUrl = provided;
     }
 
     const name = String(data.name).trim();
@@ -815,6 +821,17 @@ router.put("/properties/:id", uploadImage.single("image"), async (req, res, next
         } else {
           property[f] = String(data[f]).trim();
         }
+      }
+    }
+    if (data.imageUrl !== undefined) {
+      const provided = String(data.imageUrl).trim();
+      if (!provided) {
+        property.imageUrl = null;
+        property.imagePublicId = null;
+      } else if (/^https?:\/\//i.test(provided)) {
+        property.imageUrl = provided;
+      } else {
+        return res.status(400).json({ error: "Image URL must start with http:// or https://" });
       }
     }
     if (property.name) {

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { NavLink, Link, Routes, Route, Navigate, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import Avatar from "../Avatar";
+import OnboardingModal from "../OnboardingModal";
 import DashboardHome from "../../pages/dashboard/DashboardHome";
 import Discover from "../../pages/dashboard/Discover";
 import PropertyDetail from "../../pages/dashboard/PropertyDetail";
@@ -159,7 +160,7 @@ function MobileNav() {
 }
 
 export default function UserLayout() {
-  const { user, unreadNotifications } = useApp();
+  const { user, unreadNotifications, onboardingOpen } = useApp();
 
   return (
     <div className="dShell">
@@ -179,6 +180,7 @@ export default function UserLayout() {
         </main>
         <MobileNav />
       </div>
+      {onboardingOpen && <OnboardingModal />}
     </div>
   );
 }

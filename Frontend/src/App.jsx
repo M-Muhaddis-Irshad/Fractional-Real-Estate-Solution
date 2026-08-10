@@ -3,7 +3,10 @@ import { AppProvider, useApp } from "./context/AppContext";
 import { AdminProvider } from "./context/AdminContext";
 import Toast from "./components/Toast";
 import Landing from "./pages/Landing";
+import OurStory from "./pages/OurStory";
 import AuthPage from "./pages/AuthPage";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import UserLayout from "./components/dashboard/UserLayout";
 import AdminLayout from "./pages/admin/AdminLayout";
 
@@ -44,7 +47,10 @@ function AppShell() {
     <>
       <Routes>
         <Route path="/login" element={<AuthPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<Landing />} />
+        <Route path="/our-story" element={<OurStory />} />
         <Route
           path="/admin/*"
           element={

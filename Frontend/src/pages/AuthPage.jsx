@@ -114,6 +114,7 @@ export default function AuthPage() {
               <span className="fieldLabel">Full name</span>
               <input
                 className="input"
+                name="name"
                 value={form.name}
                 onChange={set("name")}
                 placeholder="e.g. Alex Vance"
@@ -126,6 +127,7 @@ export default function AuthPage() {
             <span className="fieldLabel">Email</span>
             <input
               className="input"
+              name="email"
               type="email"
               value={form.email}
               onChange={set("email")}
@@ -138,6 +140,7 @@ export default function AuthPage() {
             <span className="fieldLabel">Password</span>
             <input
               className="input"
+              name="password"
               type="password"
               value={form.password}
               onChange={set("password")}
@@ -157,6 +160,12 @@ export default function AuthPage() {
                 I accept the Terms &amp; Conditions and understand that no real transactions occur.
               </span>
             </label>
+          )}
+
+          {mode !== "register" && (
+            <div className="authForgotRow">
+              <Link to="/forgot-password">Forgot password?</Link>
+            </div>
           )}
 
           {error && <div className="errorText">{error}</div>}

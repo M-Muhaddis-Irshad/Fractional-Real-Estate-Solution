@@ -24,6 +24,13 @@ const userSchema = new mongoose.Schema(
     avatarPublicId: { type: String, default: null },
     lastLoginAt: { type: Date, default: null },
     rejectedReason: { type: String, default: null },
+    // Onboarding — set once the user has seen/completed the welcome modal on
+    // their first login, so it never shows again (persists across devices).
+    hasSeenOnboarding: { type: Boolean, default: false },
+    // Password reset — stores a SHA-256 hash of the one-time token, so the
+    // raw token never touches the DB and each link can be used only once.
+    resetTokenHash: { type: String, default: null },
+    resetTokenExpires: { type: Date, default: null },
   },
   { timestamps: true }
 );

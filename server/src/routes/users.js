@@ -105,6 +105,21 @@ router.put("/me", requireAuth, async (req, res, next) => {
   }
 });
 
+// Mark the onboarding welcome modal as seen. Called once when the user closes
+// or completes it, so it never reappears on future logins (stored in the DB,
+// not just localStorage — persists across devices).
+router.patch("/onboarding-complete", requireAuth, async (req, res, next) => {
+  try {
+    if (!req.user.hasSeenOnboarding) {
+      req.user.hasSeenOnboarding = true;
+      await req.user.save();
+    }
+    res.json({ ok: true, user: req.user.toSafeJSON() });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get("/notifications", requireAuth, async (req, res, next) => {
   try {
     const notifications = await Notification.find({

@@ -24,6 +24,8 @@ const SEED_PROPERTIES = [
     yieldPct: 7.8,
     initials: "CT",
     hue: 42,
+    imageUrl:
+      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1400&q=80",
   },
   {
     name: "Gulberg Commercial Plaza",
@@ -38,6 +40,8 @@ const SEED_PROPERTIES = [
     yieldPct: 9.4,
     initials: "GP",
     hue: 190,
+    imageUrl:
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=80",
   },
   {
     name: "Bahria Orchard Villas",
@@ -52,6 +56,8 @@ const SEED_PROPERTIES = [
     yieldPct: 6.9,
     initials: "BV",
     hue: 260,
+    imageUrl:
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=80",
   },
   {
     name: "Hyderabad Logistics Hub",
@@ -66,6 +72,8 @@ const SEED_PROPERTIES = [
     yieldPct: 10.2,
     initials: "LH",
     hue: 15,
+    imageUrl:
+      "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=1400&q=80",
   },
 ];
 
@@ -107,6 +115,16 @@ export async function seed() {
       }))
     );
     console.log(`[seed] inserted ${SEED_PROPERTIES.length} seed properties`);
+  } else {
+    // Backfill real photography onto properties created before images existed.
+    for (const sp of SEED_PROPERTIES) {
+      const match = await Property.findOne({ name: sp.name });
+      if (match && !match.imageUrl) {
+        match.imageUrl = sp.imageUrl;
+        await match.save();
+        console.log(`[seed] backfilled image for ${sp.name}`);
+      }
+    }
   }
 
   // Demo investors so the admin dashboard isn't empty on first run.

@@ -1,8 +1,29 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import PropertyCard from "../components/PropertyCard";
+import Reveal from "../components/Reveal";
+import Photo from "../components/Photo";
+import PublicNav from "../components/PublicNav";
+import PublicFooter from "../components/PublicFooter";
 import { moneyShort } from "../lib/format";
+
+const LANDING_LINKS = [
+  { href: "/our-story", label: "Our Story" },
+  { href: "#properties", label: "Properties" },
+  { href: "#how", label: "How it works" },
+  { href: "#features", label: "Features" },
+  { href: "#faq", label: "FAQ" },
+];
+
+/* Royalty-free photography (Unsplash CDN, auto WebP). */
+const IMGS = {
+  heroSkyline:
+    "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1400&q=80",
+  logistics:
+    "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=400&q=80",
+  villa:
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=400&q=80",
+};
 
 const DEFAULT_CONTENT = {
   hero: {
@@ -47,43 +68,9 @@ const DEFAULT_CONTENT = {
   },
 };
 
-function LandingNav({ user, onJoin }) {
-  return (
-    <header className="lnNav">
-      <div className="lnNavInner">
-        <Link to="/" className="lnBrand">
-          <img src="/logo/logo.png" alt="Flux" className="lnLogo" />
-          <span>Flux</span>
-        </Link>
-        <nav className="lnLinks">
-          <a href="#properties">Properties</a>
-          <a href="#how">How it works</a>
-          <a href="#features">Features</a>
-          <a href="#faq">FAQ</a>
-        </nav>
-        <div className="lnActions">
-          {user ? (
-            <Link
-              to={user.role === "superadmin" ? "/admin" : "/dashboard"}
-              className="btn btnPrimary"
-            >
-              Open dashboard →
-            </Link>
-          ) : (
-            <>
-              <Link to="/login" className="btn btnGhost">
-                Sign in
-              </Link>
-              <button className="btn btnPrimary" onClick={onJoin}>
-                Get started
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
-  );
-}
+const scrollToId = (id) => {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+};
 
 function Hero({ content, properties, stats, user, onJoin }) {
   const totalValue = properties.reduce((s, p) => s + p.totalValue, 0);
@@ -124,6 +111,13 @@ function Hero({ content, properties, stats, user, onJoin }) {
       </div>
 
       <div className="lnHeroVisual">
+        <Photo
+          src={IMGS.heroSkyline}
+          alt="Modern city skyline at dusk"
+          className="lnHeroPhoto"
+          ratio="4/3"
+          eager
+        />
         <div className="lnDashCard">
           <div className="lnDashHead">
             <div>
@@ -153,14 +147,14 @@ function Hero({ content, properties, stats, user, onJoin }) {
           </div>
         </div>
         <div className="lnFloatingCard lnFc1">
-          <span className="lnFcIcon">◈</span>
+          <img src={IMGS.logistics} alt="Hyderabad Logistics Hub" className="lnFcThumb" loading="lazy" decoding="async" />
           <div>
             <div className="lnFcTitle">New drop available</div>
             <div className="lnFcSub">Hyderabad Logistics Hub · 10.2% APY</div>
           </div>
         </div>
         <div className="lnFloatingCard lnFc2">
-          <span className="lnFcIcon lnFcGreen">✓</span>
+          <img src={IMGS.villa} alt="Bahria Orchard Villa" className="lnFcThumb" loading="lazy" decoding="async" />
           <div>
             <div className="lnFcTitle">Distribution paid</div>
             <div className="lnFcSub">+$214.50 this month</div>
@@ -184,19 +178,19 @@ function HowItWorks() {
   ];
   return (
     <section className="lnSection" id="how">
-      <div className="lnSectionHead">
+      <Reveal className="lnSectionHead">
         <div className="lnEyebrow">How it works</div>
         <h2 className="lnSectionTitle">From signup to your first distribution</h2>
         <p className="lnSectionSub">Three steps stand between you and institutional-grade real estate.</p>
-      </div>
+      </Reveal>
       <div className="lnSteps">
-        {steps.map((s) => (
-          <div className="lnStep" key={s.n}>
+        {steps.map((s, i) => (
+          <Reveal className="lnStep" delay={i * 90} key={s.n}>
             <div className="lnStepIcon">{s.icon}</div>
             <div className="lnStepNum">{s.n}</div>
             <div className="lnStepTitle">{s.title}</div>
             <div className="lnStepText">{s.text}</div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -207,18 +201,18 @@ function Features({ features }) {
   const icons = ["◈", "▤", "⬡", "⇄", "◎", "◇"];
   return (
     <section className="lnSection lnSectionAlt" id="features">
-      <div className="lnSectionHead">
+      <Reveal className="lnSectionHead">
         <div className="lnEyebrow">Why Flux</div>
         <h2 className="lnSectionTitle">Built like an institution. Designed for everyone.</h2>
         <p className="lnSectionSub">Every detail engineered for security, clarity and compounding returns.</p>
-      </div>
+      </Reveal>
       <div className="lnFeatureGrid">
         {features.map((f, i) => (
-          <div className="lnFeature" key={f.title}>
+          <Reveal className="lnFeature" delay={(i % 3) * 80} key={f.title}>
             <div className="lnFeatureIcon">{icons[i % icons.length]}</div>
             <div className="lnFeatureTitle">{f.title}</div>
             <div className="lnFeatureText">{f.text}</div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -228,13 +222,13 @@ function Features({ features }) {
 function Testimonials({ testimonials }) {
   return (
     <section className="lnSection">
-      <div className="lnSectionHead">
+      <Reveal className="lnSectionHead">
         <div className="lnEyebrow">Investor stories</div>
         <h2 className="lnSectionTitle">Trusted by thousands of investors</h2>
-      </div>
+      </Reveal>
       <div className="lnQuoteGrid">
-        {testimonials.map((t) => (
-          <div className="lnQuote" key={t.name}>
+        {testimonials.map((t, i) => (
+          <Reveal className="lnQuote" delay={i * 90} key={t.name}>
             <div className="lnQuoteMark">“</div>
             <div className="lnQuoteText">{t.quote}</div>
             <div className="lnQuoteAuthor">
@@ -244,7 +238,7 @@ function Testimonials({ testimonials }) {
                 <div className="lnQuoteRole">{t.role}</div>
               </div>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -255,10 +249,10 @@ function Faq({ faqs }) {
   const [open, setOpen] = useState(0);
   return (
     <section className="lnSection" id="faq">
-      <div className="lnSectionHead">
+      <Reveal className="lnSectionHead">
         <div className="lnEyebrow">FAQ</div>
         <h2 className="lnSectionTitle">Questions, answered</h2>
-      </div>
+      </Reveal>
       <div className="lnFaqList">
         {faqs.map((f, i) => (
           <div className={"lnFaq" + (open === i ? " lnFaqOpen" : "")} key={f.q}>
@@ -278,18 +272,18 @@ function BlogPreview({ posts }) {
   if (!posts || posts.length === 0) return null;
   return (
     <section className="lnSection lnSectionAlt">
-      <div className="lnSectionHead">
+      <Reveal className="lnSectionHead">
         <div className="lnEyebrow">From the blog</div>
         <h2 className="lnSectionTitle">Latest insights</h2>
-      </div>
+      </Reveal>
       <div className="lnBlogGrid">
-        {posts.slice(0, 3).map((p) => (
-          <article className="lnBlog" key={p.title}>
+        {posts.slice(0, 3).map((p, i) => (
+          <Reveal className="lnBlog" delay={i * 80} key={p.title}>
             <span className="lnBlogTag">{p.tag}</span>
             <h3 className="lnBlogTitle">{p.title}</h3>
             <p className="lnBlogExcerpt">{p.excerpt}</p>
             <div className="lnBlogDate">{p.date}</div>
-          </article>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -298,56 +292,20 @@ function BlogPreview({ posts }) {
 
 function CtaBand({ cta, onJoin }) {
   return (
-    <section className="lnCta">
-      <div className="lnCtaInner">
+    <section className="lnCta" id="cta">
+      <Reveal className="lnCtaInner">
         <h2 className="lnCtaTitle">{cta.title}</h2>
         <p className="lnCtaSub">{cta.subtitle}</p>
         <button className="btn btnPrimary btnLg" onClick={onJoin}>
           {cta.button} →
         </button>
         <div className="lnCtaNote">No real transactions occur. Demo platform only.</div>
-      </div>
+      </Reveal>
     </section>
   );
 }
 
-function LandingFooter() {
-  return (
-    <footer className="lnFooter">
-      <div className="lnFooterInner">
-        <div className="lnFooterCol lnFooterBrandCol">
-          <Link to="/" className="lnBrand">
-            <img src="/logo/logo.png" alt="Flux" className="lnLogo" />
-            <span>Flux</span>
-          </Link>
-          <p>The world's premier gateway to fractional real estate liquidity. Redefining property ownership for the digital age.</p>
-        </div>
-        <div className="lnFooterCol">
-          <div className="lnFooterHead">Marketplace</div>
-          <a href="#properties">Latest drops</a>
-          <Link to="/login">Secondary market</Link>
-          <a href="#how">Asset classes</a>
-        </div>
-        <div className="lnFooterCol">
-          <div className="lnFooterHead">Platform</div>
-          <a href="#features">Security</a>
-          <a href="#faq">FAQ</a>
-          <Link to="/login">Investor kit</Link>
-        </div>
-        <div className="lnFooterCol">
-          <div className="lnFooterHead">Compliance</div>
-          <p className="lnFooterLegal">
-            Real estate investments involve risks. Performance is not guaranteed. Fractional tokens are
-            issued under Reg D/S exemptions. Please consult your financial advisor before committing capital.
-          </p>
-        </div>
-      </div>
-      <div className="lnFooterBottom">
-        © {new Date().getFullYear()} Obsidian Flux LLC. All rights reserved.
-      </div>
-    </footer>
-  );
-}
+
 
 export default function Landing() {
   const { user, properties, content } = useApp();
@@ -362,29 +320,28 @@ export default function Landing() {
     return [...featuredProps, ...rest].slice(0, 4);
   }, [properties]);
 
-  const onJoin = () => {
-    const el = document.getElementById("properties");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
+  const onJoin = () => scrollToId("properties");
 
   return (
     <div className="landingPage">
-      <LandingNav user={user} onJoin={onJoin} />
+      <PublicNav user={user} links={LANDING_LINKS} onJoin={onJoin} />
       <main>
         <Hero content={c.hero} stats={c.stats} properties={properties} user={user} onJoin={onJoin} />
 
         <section className="lnSection" id="properties">
-          <div className="lnSectionHead">
+          <Reveal className="lnSectionHead">
             <div className="lnEyebrow">Live marketplace</div>
             <h2 className="lnSectionTitle">Featured investment opportunities</h2>
             <p className="lnSectionSub">Institutional-grade assets, professionally managed, open to everyone.</p>
-          </div>
+          </Reveal>
           {featured.length === 0 ? (
             <div className="lnEmpty">Properties are being prepared — check back soon.</div>
           ) : (
             <div className="lnPropGrid">
-              {featured.map((p) => (
-                <PropertyCard key={p.id} property={p} />
+              {featured.map((p, i) => (
+                <Reveal delay={(i % 4) * 80} key={p.id}>
+                  <PropertyCard property={p} />
+                </Reveal>
               ))}
             </div>
           )}
@@ -397,7 +354,7 @@ export default function Landing() {
         <BlogPreview posts={c.blog} />
         <CtaBand cta={c.cta} onJoin={onJoin} />
       </main>
-      <LandingFooter />
+      <PublicFooter />
     </div>
   );
 }

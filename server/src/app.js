@@ -8,11 +8,23 @@ import requestRoutes from "./routes/requests.js";
 import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
 import tokenRoutes from "./routes/tokens.js";
+import paymentRoutes from "./routes/payments.js";
 
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: "2mb" }));
+
+// body-parser's `verify` hook hands us the RAW request buffer while it parses
+// — this is what Coinbase Commerce signs, so it's captured here for webhook
+// signature verification without double-consuming the stream.
+app.use(
+  express.json({
+    limit: "2mb",
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString("utf8");
+    },
+  })
+);
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "flux-api", time: new Date().toISOString() });
@@ -25,6 +37,7 @@ app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/tokens", tokenRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found." });
