@@ -39,7 +39,7 @@ const DEFAULT_CONTENT: SiteContent = {
   },
   stats: [
     { label: "Properties Listed", value: "12" },
-    { label: "Total Value", value: "$480M" },
+    { label: "Total Value", value: "Rs 480M" },
     { label: "Avg. Yield", value: "8.6%" },
     { label: "Active Investors", value: "24K" },
   ],
@@ -164,7 +164,7 @@ function Hero({
         )}
         <div className="lnTrustRow">
           <span>SEC REGISTERED</span>
-          <span>$250M INSURANCE</span>
+          <span>Rs 250M INSURANCE</span>
           <span>AES-256 ENCRYPTED</span>
         </div>
       </div>
@@ -228,7 +228,7 @@ function Hero({
           />
           <div>
             <div className="lnFcTitle">Distribution paid</div>
-            <div className="lnFcSub">+$214.50 this month</div>
+            <div className="lnFcSub">+Rs 214.50 this month</div>
           </div>
         </div>
       </div>

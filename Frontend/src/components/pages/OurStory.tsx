@@ -113,7 +113,7 @@ function WhoWeAre() {
         <Reveal className="osMedia">
           <Photo src={IMGS.whoWeAre} alt="Modern apartment buildings at golden hour" ratio="4/3" className="osPhoto" />
           <div className="osMediaBadge">
-            <div className="osMediaBadgeVal">$480M+</div>
+            <div className="osMediaBadgeVal">Rs 480M+</div>
             <div className="osMediaBadgeLabel">in assets listed</div>
           </div>
         </Reveal>

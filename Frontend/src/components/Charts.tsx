@@ -34,9 +34,9 @@ const axisStyle = { fill: "var(--muted)", fontSize: 11.5 };
 function fmtAxis(v: string | number): string {
   const n = Number(v);
   const abs = Math.abs(n);
-  if (abs >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
-  if (abs >= 1e3) return `$${(n / 1e3).toFixed(0)}K`;
-  return `$${n}`;
+  if (abs >= 1e6) return `Rs ${(n / 1e6).toFixed(1)}M`;
+  if (abs >= 1e3) return `Rs ${(n / 1e3).toFixed(0)}K`;
+  return `Rs ${n}`;
 }
 
 interface TrendProps {
@@ -62,7 +62,7 @@ export function AreaTrend({ data, dataKey = "invested", color = "#6366f1", heigh
         <YAxis tickLine={false} axisLine={false} tick={axisStyle} tickFormatter={fmtAxis} width={52} />
         <Tooltip
           contentStyle={tooltipStyle}
-          formatter={(v) => [`$${Number(v).toLocaleString()}`, "Value"]}
+          formatter={(v) => [`Rs ${Number(v).toLocaleString()}`, "Value"]}
         />
         <Area
           type="monotone"
@@ -94,7 +94,7 @@ export function BarTrend({
         <YAxis tickLine={false} axisLine={false} tick={axisStyle} tickFormatter={fmtAxis} width={52} />
         <Tooltip
           contentStyle={tooltipStyle}
-          formatter={(v) => [`$${Number(v).toLocaleString()}`, ""]}
+          formatter={(v) => [`Rs ${Number(v).toLocaleString()}`, ""]}
           cursor={{ fill: "rgba(99, 102, 241, 0.1)" }}
         />
         <Bar dataKey={dataKey} fill={color} radius={radius} maxBarSize={34} />

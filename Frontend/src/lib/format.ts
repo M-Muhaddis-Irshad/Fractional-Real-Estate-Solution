@@ -1,8 +1,8 @@
 export const money = (n: number): string =>
-  "$" + Math.round(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  "Rs " + Math.round(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
 
 export const moneyCents = (n: number): string =>
-  "$" +
+  "Rs " +
   Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export const cryptoFmt = (n: number | string, currency = ""): string => {
@@ -17,9 +17,9 @@ export const cryptoFmt = (n: number | string, currency = ""): string => {
 
 export const moneyShort = (n: number): string => {
   const abs = Math.abs(n);
-  if (abs >= 1e9) return "$" + (n / 1e9).toFixed(1).replace(/\.0$/, "") + "B";
-  if (abs >= 1e6) return "$" + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
-  if (abs >= 1e3) return "$" + (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K";
+  if (abs >= 1e9) return "Rs " + (n / 1e9).toFixed(1).replace(/\.0$/, "") + "B";
+  if (abs >= 1e6) return "Rs " + (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+  if (abs >= 1e3) return "Rs " + (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K";
   return money(n);
 };
 
