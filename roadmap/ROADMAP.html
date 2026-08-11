@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flux — Product Roadmap</title>
+<style>
+  :root{
+    --navy-900:#0a1f3c;
+    --navy-800:#10325e;
+    --navy-700:#1b4a7e;
+    --navy-100:#e8eef6;
+    --gold:#c9a227;
+    --gold-light:#f5d678;
+    --gold-pale:#fdf6e3;
+    --bg:#ffffff;
+    --bg-soft:#f4f6fa;
+    --ink:#1b2633;
+    --muted:#5b6b7f;
+    --line:#dfe6ee;
+    --green:#1e9e5a;
+    --green-soft:#e4f5ec;
+    --amber:#e59a13;
+    --amber-soft:#fdf1dc;
+    --red:#d64545;
+    --red-soft:#fbe9e9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg-soft);
+    color:var(--ink);
+    line-height:1.55;
+    padding:28px 20px 60px;
+  }
+  .page{max-width:1180px;margin:0 auto}
+
+  /* ---------- Banner ---------- */
+  .banner{
+    background:linear-gradient(120deg,var(--navy-900) 0%,var(--navy-800) 55%,var(--navy-700) 100%);
+    border-radius:18px;
+    padding:34px 38px 30px;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:22px;
+    box-shadow:0 10px 30px rgba(10,31,60,.25);
+    position:relative;
+    overflow:hidden;
+  }
+  .banner::after{
+    content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;
+    border-radius:50%;background:radial-gradient(circle,rgba(245,214,120,.28),transparent 65%);
+  }
+  .banner img{width:64px;height:64px;flex:0 0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+  .banner h1{font-size:30px;letter-spacing:.5px;font-weight:800}
+  .banner .tagline{color:var(--gold-light);font-size:15px;margin-top:3px;font-weight:500}
+  .banner .meta{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .pill{
+    font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+    padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.12);color:#dde6f2;
+    border:1px solid rgba(255,255,255,.18);
+  }
+  .pill.gold{background:rgba(245,214,120,.16);color:var(--gold-light);border-color:rgba(245,214,120,.35)}
+  .banner .gen{margin-left:auto;text-align:right;font-size:12px;color:#a9bcd4;position:relative;z-index:1}
+  .banner .gen strong{display:block;color:#e6edf6;font-size:13px}
+
+  /* ---------- Summary strip ---------- */
+  .summary{
+    display:grid;grid-template-columns:220px 1fr;gap:22px;margin:22px 0;
+    background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:22px 26px;
+  }
+  .donut-wrap{display:flex;align-items:center;gap:18px}
+  .donut{position:relative;width:112px;height:112px;flex:0 0 auto}
+  .donut svg{transform:rotate(-90deg)}
+  .donut .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .donut .center b{font-size:24px;color:var(--navy-900)}
+  .donut .center span{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .donut-label{font-size:13.5px;color:var(--muted);max-width:170px}
+  .donut-label b{color:var(--ink);display:block;font-size:14px;margin-bottom:2px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .kpi{
+    border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--bg-soft);
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .kpi .k-num{font-size:24px;font-weight:800;color:var(--navy-900)}
+  .kpi .k-num small{font-size:13px;color:var(--muted);font-weight:600;margin-left:2px}
+  .kpi .k-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+  .kpi .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+  .dot.g{background:var(--green)} .dot.a{background:var(--amber)} .dot.r{background:var(--red)}
+
+  /* ---------- Section titles ---------- */
+  .sec-title{display:flex;align-items:baseline;gap:10px;margin:34px 0 14px}
+  .sec-title h2{font-size:19px;color:var(--navy-900);letter-spacing:.3px}
+  .sec-title span{font-size:12.5px;color:var(--muted)}
+
+  /* ---------- Gantt timeline ---------- */
+  .gantt{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:22px 26px}
+  .gantt-row{display:grid;grid-template-columns:150px 1fr 92px;align-items:center;gap:14px;padding:9px 0}
+  .gantt-row + .gantt-row{border-top:1px dashed var(--line)}
+  .g-row-name{font-size:13px;font-weight:700;color:var(--navy-800)}
+  .g-row-name small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+  .g-track{position:relative;height:26px;background:var(--bg-soft);border-radius:7px;overflow:hidden;border:1px solid var(--line)}
+  .g-span{position:absolute;top:3px;bottom:3px;left:0;border-radius:5px;background:#eef1f6;border:1px solid #d8dfe8}
+  .g-fill{position:absolute;top:0;left:0;bottom:0;width:0;border-radius:5px;transition:width .9s ease}
+  .g-fill.done{background:linear-gradient(90deg,#1e9e5a,#2fbf74)}
+  .g-fill.prog{background:linear-gradient(90deg,#d98a0a,#e5a93a)}
+  .g-fill.pend{background:linear-gradient(90deg,#c0392b,#d64545);opacity:.75}
+  .g-pct{font-size:12.5px;font-weight:700;text-align:right;color:var(--navy-800)}
+
+  /* ---------- Phase cards ---------- */
+  .phases{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:6px}
+  .card{
+    background:var(--bg);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(10,31,60,.05);
+    transition:transform .18s ease,box-shadow .18s ease;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(10,31,60,.13)}
+  .card-head{padding:16px 18px 13px;color:#fff}
+  .card-head.p1{background:linear-gradient(120deg,#0a1f3c,#1b4a7e)}
+  .card-head.p2{background:linear-gradient(120deg,#10325e,#24578f)}
+  .card-head.p3{background:linear-gradient(120deg,#7a5200,#b98200)}
+  .card-head.p4{background:linear-gradient(120deg,#6b1f1f,#a13a3a)}
+  .card-head .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .card-head h3{font-size:16px;letter-spacing:.3px}
+  .badge{
+    font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;white-space:nowrap;
+  }
+  .badge.done{background:var(--green);color:#fff}
+  .badge.prog{background:#fff;color:#8a5b00;border:1px solid rgba(255,255,255,.5)}
+  .badge.pend{background:#fff;color:#7a2222;border:1px solid rgba(255,255,255,.5)}
+  .card-head .phase-sub{font-size:11.5px;opacity:.85;margin-top:4px}
+  .card-body{padding:14px 18px 6px;flex:1}
+  .card-body ul{list-style:none}
+  .card-body li{
+    position:relative;padding:0 0 9px 22px;font-size:13px;color:#33424f;
+  }
+  .card-body li::before{
+    content:"✓";position:absolute;left:2px;top:0;width:16px;height:16px;border-radius:50%;
+    background:var(--green-soft);color:var(--green);font-size:10px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .card.p3 .card-body li::before{background:var(--amber-soft);color:var(--amber)}
+  .card.p4 .card-body li::before{background:var(--red-soft);color:var(--red)}
+  .card-foot{
+    margin:2px 18px 16px;padding:10px 12px;border-radius:9px;font-size:12.5px;background:var(--bg-soft);
+    border-left:3px solid var(--gold);
+  }
+  .card-foot b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--gold);margin-bottom:2px}
+  .card-foot p{color:#3d4c5b}
+
+  /* ---------- Legend ---------- */
+  .legend{
+    margin-top:26px;background:var(--bg);border:1px solid var(--line);border-radius:14px;
+    padding:18px 26px;display:flex;flex-wrap:wrap;gap:26px;align-items:center;font-size:13px;
+  }
+  .legend h4{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-right:2px}
+  .lg{display:flex;align-items:center;gap:9px;color:#3d4c5b}
+  .sw{width:14px;height:14px;border-radius:4px;flex:0 0 auto}
+  .sw.done{background:var(--green)} .sw.prog{background:var(--amber)} .sw.pend{background:var(--red)}
+  .legend .note{margin-left:auto;color:var(--muted);font-size:12px;text-align:right}
+
+  .toolbar{display:flex;justify-content:flex-end;gap:10px;margin:20px 0 0}
+  .btn{
+    border:1px solid var(--navy-800);background:var(--navy-800);color:#fff;font-weight:600;
+    font-size:13px;padding:9px 16px;border-radius:9px;cursor:pointer;transition:.15s ease;
+    font-family:inherit;
+  }
+  .btn:hover{background:var(--navy-900)}
+  .btn.ghost{background:#fff;color:var(--navy-800)}
+  .btn.ghost:hover{background:var(--bg-soft)}
+
+  @media (max-width:1020px){
+    .phases{grid-template-columns:repeat(2,1fr)}
+    .summary{grid-template-columns:1fr}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:620px){
+    .phases{grid-template-columns:1fr}
+    .banner{flex-direction:column;align-items:flex-start;padding:26px 24px}
+    .banner .gen{margin-left:0;text-align:left}
+    .gantt-row{grid-template-columns:1fr;gap:6px}
+    .g-pct{text-align:left}
+    .kpis{grid-template-columns:1fr 1fr}
+  }
+  @media print{
+    body{background:#fff;padding:0}
+    .banner{box-shadow:none}
+    .toolbar{display:none}
+    .card,.gantt,.legend,.summary{box-shadow:none;break-inside:avoid}
+    .phases{break-inside:avoid}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ HEADER BANNER ============ -->
+  <header class="banner">
+    <img src="./images/logo.svg" alt="Flux logo" />
+    <div>
+      <h1>Flux</h1>
+      <div class="tagline">Fractional Real Estate Investment Platform — Own real estate, fraction by fraction.</div>
+      <div class="meta">
+        <span class="pill gold">Product Roadmap</span>
+        <span class="pill">Generated <span id="genDate">—</span></span>
+        <span class="pill">Next.js 16 · Express · MongoDB</span>
+      </div>
+    </div>
+    <div class="gen">
+      <strong>Flux · Roadmap 2026</strong>
+      Foundation → Production readiness
+    </div>
+  </header>
+
+  <!-- ============ SUMMARY ============ -->
+  <section class="summary">
+    <div class="donut-wrap">
+      <div class="donut" aria-label="Overall completion 65%">
+        <svg width="112" height="112" viewBox="0 0 112 112">
+          <circle cx="56" cy="56" r="48" fill="none" stroke="#e8eef6" stroke-width="13"/>
+          <circle id="ring" cx="56" cy="56" r="48" fill="none" stroke="#c9a227" stroke-width="13"
+                  stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="301.6"
+                  data-offset="105.6"/>
+        </svg>
+        <div class="center"><b id="pctCount">0%</b><span>complete</span></div>
+      </div>
+      <div class="donut-label">
+        <b>4-phase delivery plan</b>
+        Weighted overall progress across Foundation, Core Investment Flow, Payments &amp; Onboarding, and Production Readiness.
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><span class="k-num">4<small>total</small></span><span class="k-label">Phases</span></div>
+      <div class="kpi"><span class="k-num">2<small>of 4</small></span><span class="k-label"><span class="dot g"></span>Done</span></div>
+      <div class="kpi"><span class="k-num">1<small>of 4</small></span><span class="k-label"><span class="dot a"></span>In progress</span></div>
+      <div class="kpi"><span class="k-num">1<small>of 4</small></span><span class="k-label"><span class="dot r"></span>Pending</span></div>
+    </div>
+  </section>
+
+  <!-- ============ TIMELINE ============ -->
+  <div class="sec-title"><h2>Delivery timeline</h2><span>relative scope &amp; completion per phase</span></div>
+  <section class="gantt">
+    <div class="gantt-row">
+      <div class="g-row-name">Phase 1<small>Foundation</small></div>
+      <div class="g-track"><div class="g-span" style="width:24%"></div><div class="g-fill done" style="width:24%" data-w="24"></div></div>
+      <div class="g-pct">100%</div>
+    </div>
+    <div class="gantt-row">
+      <div class="g-row-name">Phase 2<small>Core Investment Flow</small></div>
+      <div class="g-track"><div class="g-span" style="width:27%"></div><div class="g-fill done" style="width:27%" data-w="27"></div></div>
+      <div class="g-pct">100%</div>
+    </div>
+    <div class="gantt-row">
+      <div class="g-row-name">Phase 3<small>Payments &amp; Onboarding</small></div>
+      <div class="g-track"><div class="g-span" style="width:24%"></div><div class="g-fill prog" style="width:0" data-w="14.4"></div></div>
+      <div class="g-pct">60%</div>
+    </div>
+    <div class="gantt-row">
+      <div class="g-row-name">Phase 4<small>Production Readiness</small></div>
+      <div class="g-track"><div class="g-span" style="width:25%"></div><div class="g-fill pend" style="width:0" data-w="0"></div></div>
+      <div class="g-pct">0%</div>
+    </div>
+  </section>
+
+  <!-- ============ PHASE CARDS ============ -->
+  <div class="sec-title"><h2>Phase breakdown</h2><span>what ships, when, and why it matters to investors</span></div>
+  <section class="phases">
+
+    <!-- Phase 1 -->
+    <article class="card">
+      <div class="card-head p1">
+        <div class="top"><h3>Phase 1 · Foundation</h3><span class="badge done">Done</span></div>
+        <div class="phase-sub">Auth · Listings · UI overhaul · Story</div>
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>JWT role-based auth — investor &amp; super-admin, with account approval / suspension workflow</li>
+          <li>Property listings with admin review (approve / reject / feature / investing toggle)</li>
+          <li>Complete UI overhaul — migrated to Next.js 16 (App Router) + TypeScript</li>
+          <li>Public site: landing, Our Story, sign-up / login / password reset</li>
+        </ul>
+      </div>
+      <div class="card-foot"><b>Benefit to investor</b><p>Sign up, browse vetted listings and trust a polished, professional platform.</p></div>
+    </article>
+
+    <!-- Phase 2 -->
+    <article class="card">
+      <div class="card-head p2">
+        <div class="top"><h3>Phase 2 · Core Investment Flow</h3><span class="badge done">Done</span></div>
+        <div class="phase-sub">Requests · Approval · Fees · Tokens</div>
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>Share purchase requests — pending → approved / rejected, with optional manual admin gate</li>
+          <li>Atomic share allocation with oversell guard — shares can never be double-sold</li>
+          <li>Transparent team fee — 2.25% default, computed up-front on every request</li>
+          <li>Flux Chain ownership tokens — hash-linked ledger, verifiable via <code>verifyChain</code></li>
+          <li>Separate investor Portfolio / Ledger and internal Team Console</li>
+        </ul>
+      </div>
+      <div class="card-foot"><b>Benefit to investor</b><p>Instant, transparent settlement with a verifiable ownership record.</p></div>
+    </article>
+
+    <!-- Phase 3 -->
+    <article class="card">
+      <div class="card-head p3">
+        <div class="top"><h3>Phase 3 · Payments &amp; Onboarding</h3><span class="badge prog">In Progress</span></div>
+        <div class="phase-sub">Crypto · Carousel · OAuth</div>
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>Coinbase Commerce checkout — BTC / ETH / USDC / USDT, live-ready with signed HMAC webhooks</li>
+          <li>Demo mode auto-confirms ~20s so the full flow is testable end-to-end today</li>
+          <li>5-slide onboarding carousel on first login, persisted per account</li>
+          <li>Google / Apple OAuth — planned, awaiting Apple Developer account</li>
+        </ul>
+      </div>
+      <div class="card-foot"><b>Benefit to investor</b><p>Crypto-native checkout + a guided first-run experience lowers the barrier to a first investment.</p></div>
+    </article>
+
+    <!-- Phase 4 -->
+    <article class="card">
+      <div class="card-head p4">
+        <div class="top"><h3>Phase 4 · Production Readiness</h3><span class="badge pend">Pending</span></div>
+        <div class="phase-sub">Compliance · Live keys · Hardening</div>
+      </div>
+      <div class="card-body">
+        <ul>
+          <li>Legal / compliance review — KYC/AML, entity formation, terms &amp; conditions</li>
+          <li>Live Coinbase Commerce API keys + webhook secret (currently demo mode)</li>
+          <li>Fiat payment gateway integration (card / bank — currently simulated)</li>
+          <li>Real share-supply validation, ledger audits &amp; security hardening</li>
+          <li>Apple Developer account + Google/Apple OAuth sign-in</li>
+        </ul>
+      </div>
+      <div class="card-foot"><b>Benefit to investor</b><p>Turns a strong demo into a platform ready to handle real money at scale.</p></div>
+    </article>
+  </section>
+
+  <!-- ============ LEGEND ============ -->
+  <section class="legend">
+    <h4>Status legend</h4>
+    <span class="lg"><span class="sw done"></span> Done — shipped &amp; verified</span>
+    <span class="lg"><span class="sw prog"></span> In progress — core path works, production polish pending</span>
+    <span class="lg"><span class="sw pend"></span> Pending — not started, gated by external prerequisites</span>
+    <span class="note">Flux · Internal roadmap — for demo use.<br/>Export via Print → Save as PDF, or screenshot for your deck.</span>
+  </section>
+
+  <!-- ============ TOOLBAR ============ -->
+  <div class="toolbar">
+    <button class="btn ghost" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    <button class="btn" onclick="location.reload()">↻ Reset view</button>
+  </div>
+</div>
+
+<script>
+  // ---------- Animate on load ----------
+  document.addEventListener("DOMContentLoaded", function () {
+    var d = new Date();
+    document.getElementById("genDate").textContent =
+      d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+    // Gantt fills
+    document.querySelectorAll(".g-fill[data-w]").forEach(function (el, i) {
+      setTimeout(function () { el.style.width = el.dataset.w + "%"; }, 150 + i * 120);
+    });
+
+    // Donut ring
+    var ring = document.getElementById("ring");
+    setTimeout(function () { ring.style.strokeDashoffset = ring.dataset.offset; }, 400);
+
+    // Percentage counter
+    var target = 65, cur = 0;
+    var out = document.getElementById("pctCount");
+    var t = setInterval(function () {
+      cur += 2;
+      if (cur >= target) { cur = target; clearInterval(t); }
+      out.textContent = cur + "%";
+    }, 24);
+  });
+</script>
+</body>
+</html>

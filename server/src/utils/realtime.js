@@ -11,7 +11,13 @@ export function initRealtime(server) {
   // FRONTEND_URL is set (production), restrict the origin to it plus the
   // local dev origin; otherwise allow any origin.
   const allowedOrigins = process.env.FRONTEND_URL
-    ? [process.env.FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"]
+    ? [
+        process.env.FRONTEND_URL,
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+      ]
     : "*";
 
   io = new Server(server, {
