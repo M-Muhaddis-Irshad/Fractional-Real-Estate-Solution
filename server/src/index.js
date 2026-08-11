@@ -16,7 +16,8 @@ dotenv.config({
 const PORT = Number(process.env.PORT);
 const MONGODB_URI = process.env.MONGODB_URI
 
-console.log(PORT)
+console.log(PORT);
+
 async function main() {
   await connectDB(MONGODB_URI);
   await seed();
