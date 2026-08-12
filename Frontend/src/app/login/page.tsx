@@ -8,8 +8,13 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; google_error?: string }>;
 }) {
-  const { next } = await searchParams;
-  return <AuthPage next={next} />;
+  const { next, google_error } = await searchParams;
+  return (
+    <AuthPage
+      next={next}
+      googleError={google_error ? "Google sign-in failed. Please try again." : undefined}
+    />
+  );
 }

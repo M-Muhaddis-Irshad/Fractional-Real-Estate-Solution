@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 export const USER_STATUSES = ["pending", "active", "rejected", "suspended"];
 export const USER_ROLES = ["user", "superadmin"];
+export const USER_PROVIDERS = ["local", "google"];
 
 const userSchema = new mongoose.Schema(
   {
@@ -14,9 +15,27 @@ const userSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-    passwordHash: { type: String, required: true },
+    // Password is only required for local (email/password) accounts. Google
+    // users have no password and can't sign in with one until they set it.
+    passwordHash: {
+      type: String,
+      validate: {
+        validator(value) {
+          if (this.provider === "google") return value == null;
+          return typeof value === "string" && value.length > 0;
+        },
+        message: "Password is required for local accounts.",
+      },
+    },
     role: { type: String, enum: USER_ROLES, default: "user" },
     status: { type: String, enum: USER_STATUSES, default: "pending" },
+    // Authentication provider: local (email/password) or google (OAuth).
+    // A user who later links Google still stays "local" so their password keeps working.
+    provider: { type: String, enum: USER_PROVIDERS, default: "local" },
+    // Google account id — set only for OAuth users. Sparse + unique so users
+    // who never sign in with Google simply don't have the field at all (a
+    // default value would conflict with the unique index).
+    googleId: { type: String, unique: true, sparse: true },
     acceptedTerms: { type: Boolean, default: false },
     acceptedTermsAt: { type: Date, default: null },
     termsVersion: { type: String, default: "1.0" },

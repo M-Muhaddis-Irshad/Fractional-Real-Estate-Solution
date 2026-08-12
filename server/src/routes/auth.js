@@ -8,6 +8,7 @@ import { requireAuth } from "../middleware/auth.js";
 import { logActivity } from "../utils/activity.js";
 import { emitToAdmins } from "../utils/realtime.js";
 import { sendMail } from "../utils/mail.js";
+import { configurePassport, passport } from "../utils/passport.js";
 
 const router = Router();
 
@@ -110,6 +111,13 @@ router.post("/login", async (req, res, next) => {
     const user = await User.findOne({ email: String(email).toLowerCase() });
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password." });
+    }
+
+    // Google-only accounts have no password — they must sign in via Google.
+    if (!user.passwordHash) {
+      return res
+        .status(401)
+        .json({ error: "This account uses Google sign-in. Please continue with Google." });
     }
 
     const ok = await bcrypt.compare(String(password), user.passwordHash);
@@ -323,5 +331,40 @@ router.put("/password", requireAuth, async (req, res, next) => {
     next(err);
   }
 });
+
+// ---------------------------------------------------------------------------
+// Google OAuth — additive login method (email/password auth is untouched).
+// GET /google  starts the OAuth flow; GET /google/callback finishes it and
+// redirects to the frontend with the SAME JWT format the REST login returns.
+// ---------------------------------------------------------------------------
+router.get("/google", (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(503).json({ error: "Google sign-in is not configured." });
+  }
+  configurePassport();
+  passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+});
+
+router.get(
+  "/google/callback",
+  (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+      return res.status(503).json({ error: "Google sign-in is not configured." });
+    }
+    configurePassport();
+    next();
+  },
+  passport.authenticate("google", {
+    session: false, // we use stateless JWT auth, not sessions
+    failureRedirect: `${RESET_URL}/login?google_error=1`,
+  }),
+  (req, res) => {
+    const token = signToken(req.user);
+    // Token goes in the URL fragment (not query) so it's never logged by the
+    // frontend server or leaked via Referer. The /auth/callback page captures,
+    // stores, and redirects into the app.
+    res.redirect(`${RESET_URL}/auth/callback#token=${encodeURIComponent(token)}`);
+  }
+);
 
 export default router;

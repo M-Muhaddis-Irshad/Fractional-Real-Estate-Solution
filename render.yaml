@@ -1,0 +1,31 @@
+# Render blueprint for the standalone Flux Socket.IO service.
+#
+# This documents the setup; the same config can be entered manually via the
+# Render dashboard. Root directory is socket-server/ so Render only installs
+# and starts that folder's service.
+#
+# Required env vars are placeholders here — set real values in the Render
+# dashboard (or "Sync now" if you add them via this file).
+services:
+  - type: web
+    name: flux-socket
+    runtime: node
+    rootDir: socket-server
+    buildCommand: npm install
+    startCommand: node index.js
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 4001
+      # Same MongoDB as the Vercel REST API (required for socket auth).
+      - key: MONGODB_URI
+        sync: false
+      # MUST match the Vercel backend's JWT_SECRET.
+      - key: JWT_SECRET
+        sync: false
+      # Public origin of the deployed frontend (CORS allow-list).
+      - key: FRONTEND_URL
+        sync: false
+      # Shared secret used by the Vercel REST API on POST /emit.
+      - key: SOCKET_SERVER_SECRET
+        sync: false

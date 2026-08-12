@@ -1235,6 +1235,61 @@
   text-align: center;
   font-size: 12.5px;
 }
+.authGoogleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.authGoogleBtn svg {
+  flex-shrink: 0;
+}
+.authGoogleError {
+  margin-bottom: 14px;
+}
+.authDivider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 4px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+.authDivider::before,
+.authDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.pwWrap {
+  position: relative;
+}
+.pwWrap .input {
+  padding-right: 40px;
+}
+.pwToggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.pwToggle:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
 .authThemeBtn {
   position: absolute;
   top: 18px;
