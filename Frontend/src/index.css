@@ -758,6 +758,50 @@ table.dataTable tbody tr:hover {
   color: var(--ink);
 }
 
+/* PWA install banner (beforeinstallprompt) — subtle, dismissible */
+.pwaInstall {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 20px;
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-lg);
+  padding: 11px 12px 11px 18px;
+  max-width: min(420px, calc(100vw - 32px));
+  animation: toastIn 0.25s ease;
+}
+.pwaInstallBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.pwaInstallBody strong {
+  font-size: 13.5px;
+}
+.pwaInstallBody span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.pwaInstallClose {
+  border: none;
+  background: transparent;
+  color: var(--faint);
+  cursor: pointer;
+  padding: 4px;
+  display: inline-flex;
+}
+.pwaInstallClose:hover {
+  color: var(--ink);
+}
+
 /* Empty state */
 .emptyState {
   text-align: center;

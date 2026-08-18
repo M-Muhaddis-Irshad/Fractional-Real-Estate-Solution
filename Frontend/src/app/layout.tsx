@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Lora, Sora } from "next/font/google";
 import Script from "next/script";
 import Providers from "@/components/Providers";
 import Toast from "@/components/Toast";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import PwaInstallPrompt from "@/components/PwaInstallPrompt";
 import "../index.css";
 import "../styles/landing.css";
 import "../styles/ourstory.css";
@@ -33,11 +35,31 @@ const lora = Lora({
 // Apply the persisted theme before hydration to avoid a flash of the wrong theme.
 const THEME_INIT = `(function(){try{var t=localStorage.getItem("fre_theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();`;
 
+// PWA: manifest link + install-related head tags. themeColor lives in the
+// separate `viewport` export (Next.js App Router convention — it moved out of
+// `metadata` in recent Next versions). Colors match --navy-ink (#0f1b33).
 export const metadata: Metadata = {
   title: "Flux — Premium Real-Estate Investment",
   description:
     "Access institutional-grade real estate assets through fractional ownership. Secure, transparent, and built for the next generation of global investors.",
-  icons: { icon: "/logo/logo.webp" },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Flux",
+  },
+  icons: {
+    icon: [
+      { url: "/logo/logo.webp" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0f1b33",
 };
 
 export default function RootLayout({
@@ -60,6 +82,8 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toast />
+          <ServiceWorkerRegister />
+          <PwaInstallPrompt />
         </Providers>
       </body>
     </html>
