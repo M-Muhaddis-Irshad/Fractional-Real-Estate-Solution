@@ -3,6 +3,19 @@
 import { useState, useRef, useEffect, Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import {
+  Bell,
+  ChevronDown,
+  Compass,
+  LayoutDashboard,
+  Menu,
+  Plus,
+  Receipt,
+  Search,
+  Settings,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import Avatar from "@/components/Avatar";
 import OnboardingModal from "@/components/OnboardingModal";
@@ -10,11 +23,11 @@ import LoadingScreen from "@/components/LoadingScreen";
 import type { User } from "@/lib/types";
 
 const NAV = [
-  { to: "/dashboard", icon: "◈", label: "Dashboard" },
-  { to: "/discover", icon: "◎", label: "Discover" },
-  { to: "/ledger", icon: "▤", label: "My Ledger" },
-  { to: "/notifications", icon: "◆", label: "Notifications" },
-  { to: "/profile", icon: "●", label: "Profile" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/discover", icon: Compass, label: "Discover" },
+  { to: "/ledger", icon: Receipt, label: "My Ledger" },
+  { to: "/notifications", icon: Bell, label: "Notifications" },
+  { to: "/profile", icon: UserIcon, label: "Profile" },
 ];
 
 function isNavActive(pathname: string, to: string): boolean {
@@ -22,11 +35,24 @@ function isNavActive(pathname: string, to: string): boolean {
   return pathname === to || pathname.startsWith(to + "/");
 }
 
-function Sidebar({ user, unread, pathname }: { user: User | null; unread: number; pathname: string }) {
+function Sidebar({
+  user,
+  unread,
+  pathname,
+  onClose,
+}: {
+  user: User | null;
+  unread: number;
+  pathname: string;
+  onClose: () => void;
+}) {
   return (
     <aside className="dSidebar">
+      <button className="dSidebarClose" onClick={onClose} aria-label="Close sidebar" title="Close sidebar">
+        <X size={16} />
+      </button>
       <Link href="/" className="dBrand">
-        <img src="/logo/logo.png" alt="Flux" className="dLogo" />
+        <img src="/logo/logo.webp" alt="Flux" className="dLogo" />
         <span>Flux</span>
       </Link>
       <div className="dNavSection">Overview</div>
@@ -37,30 +63,40 @@ function Sidebar({ user, unread, pathname }: { user: User | null; unread: number
             href={n.to}
             className={"dNavItem" + (isNavActive(pathname, n.to) ? " dNavItemActive" : "")}
           >
-            <span className="dNavIcon">{n.icon}</span>
+            <span className="dNavIcon">
+              <n.icon size={16} />
+            </span>
             {n.label}
             {n.to === "/notifications" && unread > 0 && <span className="dNavBadge">{unread}</span>}
           </Link>
         ))}
       </nav>
       <div className="dSidebarFoot">
-        <Avatar name={user?.name} size="sm" />
+        <Avatar name={user?.name} src={user?.avatar} size="sm" />
         <div className="dSidebarMeta">
           <div className="dSidebarName">{user?.name}</div>
-          <div className="dSidebarRole">PRO Investor</div>
+          <div className="dSidebarRole">{user?.role === "superadmin" ? "Administrator" : "Pro Investor"}</div>
         </div>
+        <Link href="/profile" className="dSidebarGear" title="Settings" aria-label="Settings">
+          <Settings size={16} />
+        </Link>
       </div>
     </aside>
   );
 }
 
-function Topbar() {
+function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, theme, toggleTheme, unreadNotifications, logout, pendingRequests } = useApp();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -89,9 +125,14 @@ function Topbar() {
 
   return (
     <header className="dTopbar">
+      <button className="dMenuBtn" onClick={onMenu} aria-label="Toggle sidebar" title="Toggle sidebar">
+        <Menu size={18} />
+      </button>
       <div className="dTopbarLeft">
         <div className="dSearch">
-          <span className="searchIcon">⌕</span>
+          <span className="searchIcon">
+            <Search size={14} />
+          </span>
           <input
             placeholder="Search properties, cities, yields..."
             value={searchParams.get("q") || ""}
@@ -101,6 +142,10 @@ function Topbar() {
         </div>
       </div>
       <div className="dTopbarRight">
+        <Link href="/discover" className="btn btnGold dInvestBtn">
+          <Plus size={15} />
+          Explore assets
+        </Link>
         {pendingRequests.length > 0 && (
           <Link
             href="/ledger"
@@ -110,23 +155,25 @@ function Topbar() {
             <span className="dStatusDot" /> {pendingRequests.length} pending
           </Link>
         )}
-        <label className="switch" title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
-          <input type="checkbox" checked={theme === "light"} onChange={toggleTheme} />
+        <label className="switch switchTheme" title={mounted ? `Switch to ${theme === "dark" ? "light" : "dark"} theme` : "Toggle theme"}>
+          <input type="checkbox" checked={mounted && theme === "light"} onChange={toggleTheme} />
           <span className="switchTrack" />
         </label>
         <Link href="/notifications" className="dBell" title="Notifications">
-          <span>◇</span>
+          <Bell size={17} />
           {unreadNotifications > 0 && <span className="dBellDot">{unreadNotifications}</span>}
         </Link>
         <div className="dProfileWrap" ref={menuRef}>
           <button className="dAvatarBtn" onClick={() => setMenuOpen((v) => !v)}>
-            <Avatar name={user?.name} size="sm" />
-            <span className="dCaret">▾</span>
+            <Avatar name={user?.name} src={user?.avatar} size="sm" />
+            <span className="dCaret">
+              <ChevronDown size={14} />
+            </span>
           </button>
           {menuOpen && (
             <div className="dDropdown">
               <div className="dDropdownHead">
-                <Avatar name={user?.name} size="md" />
+                <Avatar name={user?.name} src={user?.avatar} size="md" />
                 <div>
                   <div className="dDropdownName">{user?.name}</div>
                   <div className="dDropdownEmail">{user?.email}</div>
@@ -161,7 +208,7 @@ function MobileNav() {
           className={"dMTab" + (isNavActive(pathname, n.to) ? " dMTabActive" : "")}
         >
           <span className="dMIcon">
-            {n.icon}
+            <n.icon size={17} />
             {n.to === "/notifications" && unreadNotifications > 0 && (
               <span className="dMBadge">{unreadNotifications}</span>
             )}
@@ -177,6 +224,7 @@ export default function UserLayout({ children }: { children: ReactNode }) {
   const { user, authChecked, initialized, unreadNotifications, onboardingOpen } = useApp();
   const router = useRouter();
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Route guards — mirrors the old RequireUser + role redirects.
   useEffect(() => {
@@ -194,10 +242,17 @@ export default function UserLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="dShell">
-      <Sidebar user={user} unread={unreadNotifications} pathname={pathname} />
+      <div className={"dSidebarWrap" + (sidebarOpen ? "" : " dSidebarWrapCollapsed")}>
+        <Sidebar
+          user={user}
+          unread={unreadNotifications}
+          pathname={pathname}
+          onClose={() => setSidebarOpen(false)}
+        />
+      </div>
       <div className="dMain">
         <Suspense fallback={null}>
-          <Topbar />
+          <Topbar onMenu={() => setSidebarOpen((v) => !v)} />
         </Suspense>
         <main className="dContent">{children}</main>
         <MobileNav />

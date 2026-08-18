@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AlertTriangle, ScrollText } from "lucide-react";
 import { api } from "@/lib/api";
 import Badge from "@/components/Badge";
 import Avatar from "@/components/Avatar";
@@ -80,7 +81,7 @@ function LogsPanel({ tab }: { tab: TabKey }) {
   if (failed) {
     return (
       <div className="card">
-        <EmptyState icon="!" title="Couldn't load logs" sub="The log service may be unavailable. Try again shortly." />
+        <EmptyState icon={<AlertTriangle size={22} />} title="Couldn't load logs" sub="The log service may be unavailable. Try again shortly." />
       </div>
     );
   }
@@ -147,7 +148,7 @@ function LogsPanel({ tab }: { tab: TabKey }) {
             {(logs || []).length === 0 && (
               <tr>
                 <td colSpan={5} className="tableEmpty">
-                  <EmptyState icon="≡" title="No log entries yet" />
+                  <EmptyState icon={<ScrollText size={22} />} title="No log entries yet" />
                 </td>
               </tr>
             )}

@@ -17,8 +17,14 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // One-time password-reset links: the raw random token goes only into the
 // email link; the DB stores its SHA-256 hash and clears it after use.
 const RESET_TTL_MS = 60 * 60 * 1000; // 1 hour
-const RESET_URL = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
 const INVALID_RESET_LINK = "This reset link is invalid or has expired. Please request a new one.";
+
+// Lazy read: dotenv.config() runs in src/index.js AFTER the ES module import
+// graph is evaluated, so a module-scope process.env.FRONTEND_URL would be
+// undefined here and silently fall back to a stale Vite port. Read it per-call
+// (same pattern as the Google strategy fix in utils/passport.js).
+const getResetUrl = () =>
+  (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
 
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
@@ -226,7 +232,7 @@ router.post("/forgot-password", async (req, res, next) => {
       user.resetTokenExpires = new Date(Date.now() + RESET_TTL_MS);
       await user.save();
 
-      const link = `${RESET_URL}/reset-password?token=${raw}`;
+      const link = `${getResetUrl()}/reset-password?token=${raw}`;
       const text = [
         `Hi ${user.name},`,
         "",
@@ -356,14 +362,14 @@ router.get(
   },
   passport.authenticate("google", {
     session: false, // we use stateless JWT auth, not sessions
-    failureRedirect: `${RESET_URL}/login?google_error=1`,
+    failureRedirect: `${getResetUrl()}/login?google_error=1`,
   }),
   (req, res) => {
     const token = signToken(req.user);
     // Token goes in the URL fragment (not query) so it's never logged by the
     // frontend server or leaked via Referer. The /auth/callback page captures,
     // stores, and redirects into the app.
-    res.redirect(`${RESET_URL}/auth/callback#token=${encodeURIComponent(token)}`);
+    res.redirect(`${getResetUrl()}/auth/callback#token=${encodeURIComponent(token)}`);
   }
 );
 

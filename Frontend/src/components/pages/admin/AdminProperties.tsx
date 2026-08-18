@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Building2, Plus, Search } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import Badge from "@/components/Badge";
 import Modal from "@/components/Modal";
@@ -49,13 +50,15 @@ export default function AdminProperties() {
           <p className="pageSub">Approve listings, edit assets, and manage their status.</p>
         </div>
         <Link href="/admin/properties/new" className="btn btnPrimary">
-          + Add property
+          <Plus size={15} /> Add property
         </Link>
       </div>
 
       <div className="toolbar">
         <div className="searchBox">
-          <span className="searchIcon">⌕</span>
+          <span className="searchIcon">
+            <Search size={14} />
+          </span>
           <input
             className="input"
             placeholder="Search properties..."
@@ -96,7 +99,7 @@ export default function AdminProperties() {
               {visible.length === 0 && (
                 <tr>
                   <td colSpan={9} className="tableEmpty">
-                    <EmptyState icon="▤" title="No properties found" sub="Try a different filter or add a new property." />
+                    <EmptyState icon={<Building2 size={22} />} title="No properties found" sub="Try a different filter or add a new property." />
                   </td>
                 </tr>
               )}

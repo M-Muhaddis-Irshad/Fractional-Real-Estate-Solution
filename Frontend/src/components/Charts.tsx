@@ -47,7 +47,7 @@ interface TrendProps {
   xKey?: string;
 }
 
-export function AreaTrend({ data, dataKey = "invested", color = "#6366f1", height = 260, xKey = "month" }: TrendProps) {
+export function AreaTrend({ data, dataKey = "invested", color = "#d98e3b", height = 260, xKey = "month" }: TrendProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <AreaChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
@@ -81,7 +81,7 @@ export function AreaTrend({ data, dataKey = "invested", color = "#6366f1", heigh
 export function BarTrend({
   data,
   dataKey = "invested",
-  color = "#6366f1",
+  color = "#d98e3b",
   height = 260,
   xKey = "month",
   radius = [6, 6, 0, 0],
@@ -95,7 +95,7 @@ export function BarTrend({
         <Tooltip
           contentStyle={tooltipStyle}
           formatter={(v) => [`Rs ${Number(v).toLocaleString()}`, ""]}
-          cursor={{ fill: "rgba(99, 102, 241, 0.1)" }}
+          cursor={{ fill: "rgba(217, 142, 59, 0.1)" }}
         />
         <Bar dataKey={dataKey} fill={color} radius={radius} maxBarSize={34} />
       </BarChart>
@@ -111,7 +111,7 @@ export interface DonutDatum {
 export function Donut({
   data,
   height = 240,
-  colors = ["#6366f1", "#0ea5e9", "#f59e0b", "#10b981", "#ef4444"],
+  colors = ["#d98e3b", "#0ea5e9", "#f59e0b", "#10b981", "#ef4444"],
 }: {
   data: DonutDatum[];
   height?: number;

@@ -3,6 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  ArrowLeft,
+  Bitcoin,
+  Check,
+  Coins,
+  ExternalLink,
+  Minus,
+  Plus,
+  SearchX,
+  Star,
+  Zap,
+} from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import OwnershipBar from "@/components/OwnershipBar";
 import Badge from "@/components/Badge";
@@ -106,7 +118,7 @@ export default function PropertyDetail({ id }: { id: string }) {
   if (!property) {
     return (
       <div className="card">
-        <EmptyState icon="?" title="Property not found" sub="It may have been removed from the marketplace.">
+        <EmptyState icon={<SearchX size={22} />} title="Property not found" sub="It may have been removed from the marketplace.">
           <Link href="/discover" className="btn btnPrimary">
             Back to Discover
           </Link>
@@ -186,7 +198,7 @@ export default function PropertyDetail({ id }: { id: string }) {
   return (
     <div className="riseIn">
       <Link href="/discover" className="dBackLink">
-        ← Back to Discover
+        <ArrowLeft size={13} /> Back to Discover
       </Link>
 
       <div className="pdGrid">
@@ -199,7 +211,11 @@ export default function PropertyDetail({ id }: { id: string }) {
           >
             {!property.imageUrl && <span className="pdThumbInitials">{property.initials}</span>}
             <div className="pdThumbBadges">
-              {property.featured && <Badge status="active" label="★ Featured" />}
+              {property.featured && (
+                <Badge status="active" label={"Featured"}>
+                  <Star size={11} fill="currentColor" />
+                </Badge>
+              )}
               {paused && <Badge status="suspended" label="Investing paused" />}
             </div>
           </div>
@@ -253,7 +269,9 @@ export default function PropertyDetail({ id }: { id: string }) {
         <aside className="pdPanel">
           {receipt && !cryptoPayment ? (
             <div className="card cardPad pdReceipt">
-              <div className="pdReceiptIcon">✓</div>
+              <div className="pdReceiptIcon">
+                <Check size={20} />
+              </div>
               <div className="pdReceiptTitle">Investment complete</div>
               <div className="pdReceiptSub">
                 {receiptToken
@@ -325,7 +343,9 @@ export default function PropertyDetail({ id }: { id: string }) {
             <div className="card cardPad">
               {cryptoStatus === "confirmed" ? (
                 <div className="pdReceipt">
-                  <div className="pdReceiptIcon">✓</div>
+                  <div className="pdReceiptIcon">
+                    <Check size={20} />
+                  </div>
                   <div className="pdReceiptTitle">Crypto payment confirmed</div>
                   <div className="pdReceiptSub">
                     {cryptoResult?.token
@@ -359,7 +379,7 @@ export default function PropertyDetail({ id }: { id: string }) {
                             target="_blank"
                             rel="noreferrer"
                           >
-                            {shortHash(cryptoPayment.txHash, 8, 6)} ↗
+                            {shortHash(cryptoPayment.txHash, 8, 6)} <ExternalLink size={11} />
                           </a>
                         ) : (
                           <span className="dMono">{shortHash(cryptoPayment.txHash)}</span>
@@ -402,7 +422,7 @@ export default function PropertyDetail({ id }: { id: string }) {
               ) : (
                 <div className="cryptoPay">
                   <div className="pdReceiptIcon cryptoPayIcon">
-                    {cryptoPayment.currency === "BTC" ? "₿" : "◈"}
+                    {cryptoPayment.currency === "BTC" ? <Bitcoin size={20} /> : <Coins size={20} />}
                   </div>
                   <div className="pdReceiptTitle">
                     {cryptoStatus === "failed"
@@ -428,7 +448,7 @@ export default function PropertyDetail({ id }: { id: string }) {
                             (i === stepIdx ? " cryptoStepActive" : "")
                           }
                         >
-                          <span className="cryptoStepDot">{i < stepIdx ? "✓" : i + 1}</span>
+                          <span className="cryptoStepDot">{i < stepIdx ? <Check size={13} /> : i + 1}</span>
                           <span className="cryptoStepLabel">{s.label}</span>
                         </div>
                       ))}
@@ -459,7 +479,7 @@ export default function PropertyDetail({ id }: { id: string }) {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Open hosted checkout ↗
+                      Open hosted checkout <ExternalLink size={13} />
                     </a>
                   ) : cryptoPayment.walletAddress ? (
                     <div className="cryptoAddr">
@@ -469,7 +489,13 @@ export default function PropertyDetail({ id }: { id: string }) {
                       <div className="cryptoAddrRow">
                         <code className="cryptoAddrCode">{cryptoPayment.walletAddress}</code>
                         <button className="btn btnGhost cryptoCopyBtn" onClick={copyAddress}>
-                          {copied ? "Copied ✓" : "Copy"}
+                          {copied ? (
+                            <>
+                              <Check size={12} /> Copied
+                            </>
+                          ) : (
+                            "Copy"
+                          )}
                         </button>
                       </div>
                       <div className="cryptoAddrNote">
@@ -495,7 +521,7 @@ export default function PropertyDetail({ id }: { id: string }) {
                 <span className="pdPanelLabel">Shares to buy</span>
                 <div className="pdStepper">
                   <button className="pdStepBtn" onClick={() => setShareCount((s) => clamp(s - 1))}>
-                    −
+                    <Minus size={14} />
                   </button>
                   <input
                     className="pdStepInput"
@@ -506,7 +532,7 @@ export default function PropertyDetail({ id }: { id: string }) {
                     onChange={(e) => setShareCount(clamp(parseInt(e.target.value || "1", 10)))}
                   />
                   <button className="pdStepBtn" onClick={() => setShareCount((s) => clamp(s + 1))}>
-                    +
+                    <Plus size={14} />
                   </button>
                 </div>
               </div>
@@ -537,7 +563,9 @@ export default function PropertyDetail({ id }: { id: string }) {
                   className={"payMethodCard" + (payMethod === "instant" ? " payMethodActive" : "")}
                   onClick={() => setPayMethod("instant")}
                 >
-                  <span className="payMethodIcon">⚡</span>
+                  <span className="payMethodIcon">
+                    <Zap size={16} />
+                  </span>
                   <span className="payMethodTitle">Instant settlement</span>
                   <span className="payMethodSub">Demo — settles immediately</span>
                 </button>
@@ -546,7 +574,9 @@ export default function PropertyDetail({ id }: { id: string }) {
                   className={"payMethodCard" + (payMethod === "crypto" ? " payMethodActive" : "")}
                   onClick={() => setPayMethod("crypto")}
                 >
-                  <span className="payMethodIcon">₿</span>
+                  <span className="payMethodIcon">
+                    <Bitcoin size={16} />
+                  </span>
                   <span className="payMethodTitle">Pay with crypto</span>
                   <span className="payMethodSub">BTC · ETH · USDC · USDT</span>
                 </button>

@@ -37,12 +37,12 @@ const server = http.createServer(app);
 // (plus local dev origins), otherwise any origin is allowed.
 const allowedOrigins = FRONTEND_URL
   ? [
-      FRONTEND_URL,
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-    ]
+    FRONTEND_URL,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ]
   : "*";
 
 const io = new Server(server, {

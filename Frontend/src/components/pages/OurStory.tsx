@@ -2,7 +2,28 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import {
+  Activity,
+  ArrowLeftRight,
+  ArrowRight,
+  Building2,
+  Coins,
+  Eye,
+  Layers,
+  Mail,
+  MessageCircle,
+  Phone,
+  PieChart,
+  RefreshCw,
+  Rocket,
+  Search,
+  ShieldCheck,
+  TrendingUp,
+  UserPlus,
+  Wallet,
+} from "lucide-react";
 import { useApp } from "@/context/AppContext";
+import { statValue, useSiteStats } from "@/lib/useSiteStats";
 import PublicNav from "@/components/PublicNav";
 import PublicFooter from "@/components/PublicFooter";
 import Reveal from "@/components/Reveal";
@@ -31,28 +52,28 @@ const STORY_LINKS = [
 ];
 
 const BUY_STEPS = [
-  { icon: "◎", title: "Sign up", text: "Create your free investor account in under two minutes." },
-  { icon: "✓", title: "Complete KYC", text: "Verify your identity securely so you're cleared to invest." },
-  { icon: "◈", title: "Browse listings", text: "Explore vetted assets with transparent yields and pricing." },
-  { icon: "▤", title: "Invest in fractions", text: "Buy shares instantly — your tokens mint on the Flux Chain." },
-  { icon: "⇄", title: "Track & exit", text: "Follow returns in your dashboard and resell shares anytime." },
+  { icon: UserPlus, title: "Sign up", text: "Create your free investor account in under two minutes." },
+  { icon: ShieldCheck, title: "Complete KYC", text: "Verify your identity securely so you're cleared to invest." },
+  { icon: Search, title: "Browse listings", text: "Explore vetted assets with transparent yields and pricing." },
+  { icon: Coins, title: "Invest in fractions", text: "Buy shares instantly — your tokens mint on the Flux Chain." },
+  { icon: ArrowLeftRight, title: "Track & exit", text: "Follow returns in your dashboard and resell shares anytime." },
 ];
 
 const SELL_STEPS = [
-  { icon: "◎", title: "List your property", text: "Submit your asset through our simple listing flow." },
-  { icon: "✓", title: "Verification & valuation", text: "Our experts underwrite, inspect and professionally value it." },
-  { icon: "◈", title: "Fractionalization", text: "We structure the asset into a fixed number of tradable shares." },
-  { icon: "▤", title: "Go live", text: "The offering launches to thousands of qualified investors." },
-  { icon: "⇄", title: "Track funding", text: "Watch shares sell and capital flow in, in real time." },
+  { icon: Building2, title: "List your property", text: "Submit your asset through our simple listing flow." },
+  { icon: ShieldCheck, title: "Verification & valuation", text: "Our experts underwrite, inspect and professionally value it." },
+  { icon: PieChart, title: "Fractionalization", text: "We structure the asset into a fixed number of tradable shares." },
+  { icon: Rocket, title: "Go live", text: "The offering launches to thousands of qualified investors." },
+  { icon: Activity, title: "Track funding", text: "Watch shares sell and capital flow in, in real time." },
 ];
 
 const BENEFITS = [
-  { icon: "◎", title: "Low minimums", text: "Start with a single share — real estate ownership without a seven-figure cheque." },
-  { icon: "◈", title: "Diversification", text: "Spread capital across cities, asset classes and risk profiles in minutes." },
-  { icon: "▲", title: "Passive income", text: "Rental distributions land in your account automatically, every month." },
-  { icon: "⬡", title: "Transparency", text: "Every property is ring-fenced, insured and fully documented." },
-  { icon: "⇄", title: "Liquidity", text: "Exit positions via the secondary market instead of waiting years to sell." },
-  { icon: "◇", title: "Professional management", text: "On-ground managers handle tenants, maintenance and leasing end to end." },
+  { icon: Wallet, title: "Low minimums", text: "Start with a single share — real estate ownership without a seven-figure cheque." },
+  { icon: Layers, title: "Diversification", text: "Spread capital across cities, asset classes and risk profiles in minutes." },
+  { icon: TrendingUp, title: "Passive income", text: "Rental distributions land in your account automatically, every month." },
+  { icon: Eye, title: "Transparency", text: "Every property is ring-fenced, insured and fully documented." },
+  { icon: RefreshCw, title: "Liquidity", text: "Exit positions via the secondary market instead of waiting years to sell." },
+  { icon: ShieldCheck, title: "Professional management", text: "On-ground managers handle tenants, maintenance and leasing end to end." },
 ];
 
 const POLICIES = [
@@ -62,11 +83,6 @@ const POLICIES = [
   { title: "Exit policy", text: "Shares can be resold on the secondary market whenever a buyer matches — no lock-up surprises." },
 ];
 
-const SUPPORT = [
-  { icon: "◎", title: "Live chat", text: "Talk to a human in seconds — real-time, right inside the app." },
-  { icon: "▤", title: "Email us", text: "support@flux.invest — replies within 4 business hours." },
-  { icon: "◈", title: "Call us", text: "+1 (800) 555-0132 — Mon–Fri, 9am to 6pm PKT." },
-];
 
 const TIMELINE = [
   {
@@ -107,15 +123,27 @@ function SectionHead({ eyebrow, title, sub }: { eyebrow: string; title: string; 
 }
 
 function WhoWeAre() {
+  // Platform numbers come from the admin-editable content.stats (same source
+  // as the homepage) — no hardcoded copies.
+  const stats = useSiteStats();
+  const totalValue = statValue(stats, "Total Value");
+  const statRow = [
+    { v: statValue(stats, "Active Investors"), l: "Active investors" },
+    { v: statValue(stats, "Avg. Yield"), l: "Avg. annual yield" },
+    { v: statValue(stats, "Properties Listed"), l: "Properties listed" },
+  ].filter((s): s is { v: string; l: string } => Boolean(s.v));
+
   return (
     <section className="osSection" id="story">
       <div className="osSplit">
         <Reveal className="osMedia">
           <Photo src={IMGS.whoWeAre} alt="Modern apartment buildings at golden hour" ratio="4/3" className="osPhoto" />
-          <div className="osMediaBadge">
-            <div className="osMediaBadgeVal">Rs 480M+</div>
-            <div className="osMediaBadgeLabel">in assets listed</div>
-          </div>
+          {totalValue && (
+            <div className="osMediaBadge">
+              <div className="osMediaBadgeVal">{totalValue}</div>
+              <div className="osMediaBadgeLabel">in assets listed</div>
+            </div>
+          )}
         </Reveal>
         <div className="osText">
           <Reveal>
@@ -133,18 +161,16 @@ function WhoWeAre() {
               with as little as a single share.
             </p>
           </Reveal>
-          <div className="osStatRow">
-            {[
-              { v: "24K+", l: "Active investors" },
-              { v: "8.6%", l: "Avg. annual yield" },
-              { v: "3", l: "Asset classes" },
-            ].map((s, i) => (
-              <Reveal className="osStat" delay={i * 80} key={s.l}>
-                <div className="osStatVal">{s.v}</div>
-                <div className="osStatLabel">{s.l}</div>
-              </Reveal>
-            ))}
-          </div>
+          {statRow.length > 0 && (
+            <div className="osStatRow">
+              {statRow.map((s, i) => (
+                <Reveal className="osStat" delay={i * 80} key={s.l}>
+                  <div className="osStatVal">{s.v}</div>
+                  <div className="osStatLabel">{s.l}</div>
+                </Reveal>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -224,13 +250,17 @@ function Tracks({ steps, label }: { steps: typeof BUY_STEPS; label: string }) {
   return (
     <Reveal className="osTrack">
       <div className="osTrackHead">
-        <span className="osTrackIcon">{label === "Buying" ? "◈" : "⇄"}</span>
+        <span className="osTrackIcon">
+          {label === "Buying" ? <Coins size={18} /> : <ArrowLeftRight size={18} />}
+        </span>
         <h3 className="osTrackTitle">{label} a property</h3>
       </div>
       <ol className="osTrackSteps">
         {steps.map((s, i) => (
           <li className="osTrackStep" key={s.title}>
-            <span className="osTrackStepIcon">{s.icon}</span>
+            <span className="osTrackStepIcon">
+              <s.icon size={16} />
+            </span>
             <div>
               <div className="osTrackStepTitle">
                 <span className="osTrackStepNum">{String(i + 1).padStart(2, "0")}</span>
@@ -281,7 +311,9 @@ function Benefits() {
       <div className="osBenefitGrid">
         {BENEFITS.map((b, i) => (
           <Reveal className="osBenefit" delay={(i % 3) * 80} key={b.title}>
-            <div className="osBenefitIcon">{b.icon}</div>
+            <div className="osBenefitIcon">
+              <b.icon size={19} />
+            </div>
             <div className="osBenefitTitle">{b.title}</div>
             <div className="osBenefitText">{b.text}</div>
           </Reveal>
@@ -330,6 +362,19 @@ function Terms() {
 }
 
 function Support() {
+  // Contact details come from the admin-editable platform settings.
+  const { platform } = useApp();
+  const email = platform.supportEmail || "support@flux.app";
+  const phone = platform.supportPhone || "";
+  const hours = platform.supportHours || "Mon–Fri, 9am–6pm PKT";
+  const supportCards = [
+    { icon: MessageCircle, title: "Live chat", text: "Talk to a human in seconds — real-time, right inside the app." },
+    { icon: Mail, title: "Email us", text: `${email} — replies within 4 business hours.` },
+  ];
+  if (phone) {
+    supportCards.push({ icon: Phone, title: "Call us", text: `${phone} — ${hours}.` });
+  }
+
   return (
     <section className="osSection" id="support">
       <div className="osSplit osSplitReverse">
@@ -342,13 +387,15 @@ function Support() {
               our care team is a message away — and we&apos;re proud of our response times.
             </p>
             <div className="osSupportHours">
-              <span>Support hours</span> Mon–Fri, 9am–6pm · Sat, 10am–4pm PKT
+              <span>Support hours</span> {hours}
             </div>
           </Reveal>
           <div className="osSupportGrid">
-            {SUPPORT.map((c, i) => (
+            {supportCards.map((c, i) => (
               <Reveal className="osSupportCard" delay={i * 80} key={c.title}>
-                <div className="osBenefitIcon">{c.icon}</div>
+                <div className="osBenefitIcon">
+                  <c.icon size={19} />
+                </div>
                 <div className="osBenefitTitle">{c.title}</div>
                 <div className="osBenefitText">{c.text}</div>
               </Reveal>
@@ -356,7 +403,7 @@ function Support() {
           </div>
           <Reveal>
             <Link href="/#faq" className="osFaqLink">
-              Browse our FAQs →
+              Browse our FAQs <ArrowRight size={13} />
             </Link>
           </Reveal>
         </div>
@@ -379,7 +426,7 @@ function Cta(): ReactNode {
         </p>
         <div className="osCtaActions">
           <Link href="/#properties" className="btn btnPrimary btnLg">
-            Invest now →
+            Invest now <ArrowRight size={16} />
           </Link>
           <Link href="/#properties" className="btn btnGhost btnLg osCtaGhost">
             List your property

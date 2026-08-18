@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check, X } from "lucide-react";
 import Modal from "./Modal";
 import Badge from "./Badge";
 import { api } from "@/lib/api";
@@ -119,9 +120,16 @@ export function TokenCertificate({ token, onClose }: { token: Token; onClose: ()
           </button>
           {result && (
             <div className={`tkVerifyResult ${result.valid ? "tkVerifyOk" : "tkVerifyBad"}`}>
-              {result.valid
-                ? `✓ Ledger intact — ${result.blockCount} blocks (${result.tokenCount} tokens) verified.`
-                : "✗ Chain integrity check failed — a block does not link correctly."}
+              {result.valid ? (
+                <>
+                  <Check size={13} /> Ledger intact — {result.blockCount} blocks ({result.tokenCount}{" "}
+                  tokens) verified.
+                </>
+              ) : (
+                <>
+                  <X size={13} /> Chain integrity check failed — a block does not link correctly.
+                </>
+              )}
             </div>
           )}
         </div>

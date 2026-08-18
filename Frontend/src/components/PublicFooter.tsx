@@ -11,7 +11,7 @@ export default function PublicFooter() {
       <div className="lnFooterInner">
         <div className="lnFooterCol lnFooterBrandCol">
           <Link href="/" className="lnBrand" aria-label="Flux — home">
-            <img src="/logo/logo.png" alt="" className="lnLogo" width={30} height={30} />
+            <img src="/logo/logo.webp" alt="" className="lnLogo" width={30} height={30} />
             <span>Flux</span>
           </Link>
           <p>
@@ -31,6 +31,7 @@ export default function PublicFooter() {
           <Link href="/#properties">Latest drops</Link>
           <Link href="/login">Secondary market</Link>
           <Link href="/discover">Discover assets</Link>
+          <Link href="/#properties">List your property</Link>
         </div>
         <div className="lnFooterCol">
           <div className="lnFooterHead">Platform</div>

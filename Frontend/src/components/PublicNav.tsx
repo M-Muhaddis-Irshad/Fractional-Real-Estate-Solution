@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
+import { ArrowRight, Moon, Sun } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import type { User } from "@/lib/types";
 
@@ -35,7 +36,15 @@ export default function PublicNav({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { theme, toggleTheme } = useApp();
+
+  useEffect(() => {
+    // Fires only on the client, after hydration. Until this is true the theme
+    // toggle renders a neutral label so server markup and client markup match
+    // (the real theme lives in localStorage, which the server can't see).
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY >= 1);
@@ -59,11 +68,6 @@ export default function PublicNav({
     if (onJoin) onJoin();
     else scrollToFirst(["properties", "cta"]);
   };
-  const listProperty = () => {
-    close();
-    scrollToFirst(["properties", "cta"]);
-  };
-
   const renderLink = (l: NavLinkDef, onNavigate?: () => void): ReactNode =>
     l.href.startsWith("#") ? (
       <a key={l.label} href={l.href} onClick={onNavigate}>
@@ -79,7 +83,7 @@ export default function PublicNav({
     <header className={"lnNav" + (scrolled ? " lnNavScrolled" : "")}>
       <div className="lnNavInner">
         <Link href="/" className="lnBrand" onClick={close} aria-label="Flux — home">
-          <img src="/logo/logo.png" alt="" className="lnLogo" width={30} height={30} />
+          <img src="/logo/logo.webp" alt="" className="lnLogo" width={30} height={30} />
           <span>Flux</span>
         </Link>
         <nav className="lnLinks" aria-label="Primary">
@@ -89,26 +93,30 @@ export default function PublicNav({
           <button
             className="lnThemeToggle"
             onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={
+              !mounted
+                ? "Toggle theme"
+                : theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+            }
           >
-            {theme === "dark" ? "☀" : "☾"}
+            {mounted && (theme === "dark" ? <Sun size={16} /> : <Moon size={16} />)}
           </button>
           {user ? (
             <Link
               href={user.role === "superadmin" ? "/admin" : "/dashboard"}
-              className="btn btnPrimary"
+              className="btn btnGold"
             >
-              Open dashboard →
+              Open dashboard
+              <ArrowRight size={15} />
             </Link>
           ) : (
             <>
-              <button className="btn btnGhost lnHideSm" onClick={listProperty}>
-                List your property
-              </button>
               <Link href="/login" className="btn btnGhost lnHideSm">
                 Sign in
               </Link>
-              <button className="btn btnPrimary" onClick={handleJoin}>
+              <button className="btn btnGold" onClick={handleJoin}>
                 Invest now
               </button>
             </>
@@ -131,17 +139,18 @@ export default function PublicNav({
           {user ? (
             <Link
               href={user.role === "superadmin" ? "/admin" : "/dashboard"}
-              className="btn btnPrimary btnBlock"
+              className="btn btnGold btnBlock"
               onClick={close}
             >
-              Open dashboard →
+              Open dashboard
+              <ArrowRight size={15} />
             </Link>
           ) : (
             <div className="lnMobileActions">
               <Link href="/login" className="btn btnGhost btnBlock" onClick={close}>
                 Sign in
               </Link>
-              <button className="btn btnPrimary btnBlock" onClick={handleJoin}>
+              <button className="btn btnGold btnBlock" onClick={handleJoin}>
                 Invest now
               </button>
             </div>

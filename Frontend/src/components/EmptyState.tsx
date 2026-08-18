@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
+import { Inbox } from "lucide-react";
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: ReactNode;
   title: ReactNode;
   sub?: ReactNode;
   children?: ReactNode;
 }
 
-export default function EmptyState({ icon = "◇", title, sub, children }: EmptyStateProps) {
+export default function EmptyState({ icon = <Inbox size={22} />, title, sub, children }: EmptyStateProps) {
   return (
     <div className="emptyState">
       <div className="emptyStateIcon">{icon}</div>

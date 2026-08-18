@@ -11,6 +11,7 @@ export interface User {
   email: string;
   role: UserRole;
   status: string;
+  avatar?: string | null;
   hasSeenOnboarding?: boolean;
   createdAt?: string;
 }
@@ -39,6 +40,7 @@ export interface UserRef {
   id: string;
   name: string;
   email: string;
+  avatar?: string | null;
 }
 
 export interface Transaction {
@@ -127,6 +129,12 @@ export interface StatItem {
   value: string;
 }
 
+/** Trust chip shown under the hero — label + optional lucide icon name. */
+export interface TrustChip {
+  label: string;
+  icon?: string;
+}
+
 export interface FeatureItem {
   title: string;
   text: string;
@@ -160,6 +168,7 @@ export interface SiteContent {
     secondaryCta: string;
   };
   stats: StatItem[];
+  trustChips: TrustChip[];
   features: FeatureItem[];
   testimonials: TestimonialItem[];
   faqs: FaqItem[];
@@ -174,6 +183,8 @@ export interface SiteContent {
 export interface PlatformSettings {
   platformName?: string;
   supportEmail?: string;
+  supportPhone?: string;
+  supportHours?: string;
   tagline?: string;
   minInvestment?: string;
   sessionTimeout?: string;

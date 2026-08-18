@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ChevronDown, ChevronUp, Receipt } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import Stat from "@/components/Stat";
 import Badge from "@/components/Badge";
@@ -39,7 +40,7 @@ export default function Portfolio() {
 
       {empty ? (
         <div className="card">
-          <EmptyState icon="▤" title="Your ledger is blank" sub="Head to Discover — your first investment settles instantly.">
+          <EmptyState icon={<Receipt size={22} />} title="Your ledger is blank" sub="Head to Discover — your first investment settles instantly.">
             <Link href="/discover" className="btn btnPrimary">
               Discover properties
             </Link>
@@ -193,7 +194,15 @@ export default function Portfolio() {
                           className="dReceiptBtn"
                           onClick={() => setOpenTx(openTx === t.id ? null : t.id)}
                         >
-                          {openTx === t.id ? "Hide ▴" : "View ▾"}
+                          {openTx === t.id ? (
+                            <>
+                              Hide <ChevronUp size={13} />
+                            </>
+                          ) : (
+                            <>
+                              View <ChevronDown size={13} />
+                            </>
+                          )}
                         </button>
                       </td>
                     </tr>

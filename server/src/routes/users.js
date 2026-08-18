@@ -5,6 +5,8 @@ import Activity from "../models/Activity.js";
 import Notification from "../models/Notification.js";
 import { getSettings } from "../models/Settings.js";
 import { requireAuth } from "../middleware/auth.js";
+import { uploadImage } from "../middleware/upload.js";
+import { uploadBuffer, destroyImage, cloudinaryConfigured } from "../utils/cloudinary.js";
 import { logActivity } from "../utils/activity.js";
 
 const router = Router();
@@ -89,7 +91,11 @@ router.put("/me", requireAuth, async (req, res, next) => {
       req.user.name = String(name).trim();
     }
     if (avatar !== undefined) {
+      const clearing = !avatar;
+      // Free the old Cloudinary asset when the avatar is removed.
+      if (clearing && req.user.avatarPublicId) await destroyImage(req.user.avatarPublicId);
       req.user.avatar = avatar || null;
+      if (clearing) req.user.avatarPublicId = null;
     }
     await req.user.save();
 
@@ -97,6 +103,35 @@ router.put("/me", requireAuth, async (req, res, next) => {
       userId: req.user._id,
       type: "profile_updated",
       message: "Updated profile details.",
+    });
+
+    res.json({ user: req.user.toSafeJSON() });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Upload (or replace) the user's profile photo. Stored on Cloudinary so the
+// avatar URL is a stable public URL; the old asset is deleted on replace.
+router.post("/me/avatar", requireAuth, uploadImage.single("image"), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No image provided." });
+    if (!cloudinaryConfigured()) {
+      return res.status(503).json({
+        error: "Image upload is not configured. Set CLOUDINARY_* env vars.",
+      });
+    }
+
+    const result = await uploadBuffer(req.file.buffer, { folder: "flux/avatars" });
+    if (req.user.avatarPublicId) await destroyImage(req.user.avatarPublicId);
+    req.user.avatar = result.secure_url;
+    req.user.avatarPublicId = result.public_id;
+    await req.user.save();
+
+    await logActivity({
+      userId: req.user._id,
+      type: "avatar_updated",
+      message: "Updated profile photo.",
     });
 
     res.json({ user: req.user.toSafeJSON() });

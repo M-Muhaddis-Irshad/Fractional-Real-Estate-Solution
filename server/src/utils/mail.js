@@ -1,6 +1,9 @@
 import { Resend } from "resend";
 
-const FROM = process.env.MAIL_FROM || "Flux <onboarding@resend.dev>";
+// Lazy read — dotenv.config() runs in src/index.js AFTER the import graph is
+// evaluated, so a module-scope read of MAIL_FROM would capture undefined and
+// fall back to the default even when the env var is set.
+const getFrom = () => process.env.MAIL_FROM || "Flux <onboarding@resend.dev>";
 
 // Lazy client — only created when a key is present, so the app still boots
 // (and logs reset links to the console) in environments without mail setup.
@@ -27,7 +30,13 @@ export async function sendMail({ to, subject, text, html }) {
     return { dev: true };
   }
 
-  const { data, error } = await resend.emails.send({ from: FROM, to, subject, text, html });
+  const { data, error } = await resend.emails.send({
+    from: getFrom(),
+    to,
+    subject,
+    text,
+    html,
+  });
   if (error) {
     throw new Error(error.message);
   }

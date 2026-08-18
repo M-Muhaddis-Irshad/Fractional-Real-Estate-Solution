@@ -304,7 +304,9 @@ router.patch("/properties/:id/investing", async (req, res, next) => {
 router.get("/content", async (req, res, next) => {
   try {
     const settings = await getSettings();
-    res.json({ content: settings.content || DEFAULT_CONTENT });
+    // Merge over DEFAULT_CONTENT so new fields (e.g. trustChips) are always
+    // present even for content saved before the field existed.
+    res.json({ content: { ...DEFAULT_CONTENT, ...(settings.content || {}) } });
   } catch (err) {
     next(err);
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { X } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export default function Toast() {
@@ -21,7 +22,7 @@ export default function Toast() {
     >
       <span>{toast.message}</span>
       <button className="toastClose" onClick={dismissToast} aria-label="Dismiss">
-        ✕
+        <X size={14} />
       </button>
     </div>
   );

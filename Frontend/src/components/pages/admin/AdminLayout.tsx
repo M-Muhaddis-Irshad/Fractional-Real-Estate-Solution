@@ -3,6 +3,23 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import {
+  ArrowLeft,
+  BarChart3,
+  Bell,
+  Building2,
+  ChevronDown,
+  Coins,
+  FileText,
+  LayoutDashboard,
+  Megaphone,
+  Menu,
+  PieChart,
+  ScrollText,
+  Settings,
+  Users,
+  X,
+} from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { useAdmin } from "@/context/AdminContext";
 import Avatar from "@/components/Avatar";
@@ -12,21 +29,21 @@ const SECTIONS = [
   {
     title: "Management",
     items: [
-      { to: "/admin", icon: "◈", label: "Overview" },
-      { to: "/admin/properties", icon: "▤", label: "Properties" },
-      { to: "/admin/fractional", icon: "◇", label: "Fractional" },
-      { to: "/admin/users", icon: "◎", label: "Users" },
-      { to: "/admin/investments", icon: "◉", label: "Investments" },
-      { to: "/admin/financials", icon: "▦", label: "Financials" },
+      { to: "/admin", icon: LayoutDashboard, label: "Overview" },
+      { to: "/admin/properties", icon: Building2, label: "Properties" },
+      { to: "/admin/fractional", icon: PieChart, label: "Fractional" },
+      { to: "/admin/users", icon: Users, label: "Users" },
+      { to: "/admin/investments", icon: Coins, label: "Investments" },
+      { to: "/admin/financials", icon: BarChart3, label: "Financials" },
     ],
   },
   {
     title: "Platform",
     items: [
-      { to: "/admin/content", icon: "☰", label: "Content" },
-      { to: "/admin/notifications", icon: "◆", label: "Notifications" },
-      { to: "/admin/settings", icon: "⚙", label: "Settings" },
-      { to: "/admin/logs", icon: "≡", label: "Logs" },
+      { to: "/admin/content", icon: FileText, label: "Content" },
+      { to: "/admin/notifications", icon: Megaphone, label: "Notifications" },
+      { to: "/admin/settings", icon: Settings, label: "Settings" },
+      { to: "/admin/logs", icon: ScrollText, label: "Logs" },
     ],
   },
 ];
@@ -40,15 +57,20 @@ function AdminSidebar({
   pendingCount,
   pathname,
   onNavigate,
+  onClose,
 }: {
   pendingCount: number;
   pathname: string;
   onNavigate?: () => void;
+  onClose: () => void;
 }) {
   return (
     <aside className="aSidebar">
+      <button className="aSidebarClose" onClick={onClose} aria-label="Close sidebar" title="Close sidebar">
+        <X size={16} />
+      </button>
       <Link href="/" className="aBrand">
-        <img src="/logo/logo.png" alt="Flux" className="aLogo" />
+        <img src="/logo/logo.webp" alt="Flux" className="aLogo" />
         <span>
           Flux <em>Admin</em>
         </span>
@@ -64,7 +86,9 @@ function AdminSidebar({
                 className={"aNavItem" + (isAdminActive(pathname, n.to) ? " aNavItemActive" : "")}
                 onClick={onNavigate}
               >
-                <span className="aNavIcon">{n.icon}</span>
+                <span className="aNavIcon">
+                  <n.icon size={16} />
+                </span>
                 {n.label}
                 {n.to === "/admin/investments" && pendingCount > 0 && (
                   <span className="aNavBadge">{pendingCount}</span>
@@ -76,7 +100,7 @@ function AdminSidebar({
       </div>
       <div className="aSidebarFoot">
         <Link href="/" className="aFootLink">
-          ← Back to site
+          <ArrowLeft size={13} /> Back to site
         </Link>
       </div>
     </aside>
@@ -127,24 +151,26 @@ function AdminTopbar({ onMenu }: { onMenu: () => void }) {
     <header className="aTopbar">
       <div className="aTopbarLeft">
         <button className="aMenuBtn" onClick={onMenu} aria-label="Open menu">
-          ☰
+          <Menu size={18} />
         </button>
         <div className="aTopbarTitle">{pageTitle}</div>
       </div>
       <div className="aTopbarRight">
-        <label className="switch" title="Toggle theme">
+        <label className="switch switchTheme" title="Toggle theme">
           <input type="checkbox" checked={theme === "light"} onChange={toggleTheme} />
           <span className="switchTrack" />
         </label>
         <div className="dProfileWrap" ref={menuRef}>
           <button className="dAvatarBtn" onClick={() => setMenuOpen((v) => !v)}>
-            <Avatar name={user?.name} size="sm" />
-            <span className="dCaret">▾</span>
+            <Avatar name={user?.name} src={user?.avatar} size="sm" />
+            <span className="dCaret">
+              <ChevronDown size={14} />
+            </span>
           </button>
           {menuOpen && (
             <div className="dDropdown">
               <div className="dDropdownHead">
-                <Avatar name={user?.name} size="md" />
+                <Avatar name={user?.name} src={user?.avatar} size="md" />
                 <div>
                   <div className="dDropdownName">{user?.name}</div>
                   <div className="dDropdownEmail">{user?.email}</div>
@@ -170,7 +196,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const pendingRequests = (requests || []).filter((r) => r.status === "pending");
-  const [navOpen, setNavOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false); // mobile drawer
+  const [collapsed, setCollapsed] = useState(false); // desktop collapse
 
   // Route guards — mirrors the old RequireAdmin logic.
   useEffect(() => {
@@ -182,21 +209,37 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   if (!authChecked || (user && !initialized)) return <LoadingScreen />;
   if (!user || user.role !== "superadmin") return <LoadingScreen />;
 
+  const openSidebar = () => {
+    setCollapsed(false);
+    setNavOpen(true);
+  };
+  const closeSidebar = () => {
+    setCollapsed(true);
+    setNavOpen(false);
+  };
+
   return (
     <div className="aShell">
       <div
         className={"aNavOverlay" + (navOpen ? " aNavOverlayOpen" : "")}
-        onClick={() => setNavOpen(false)}
+        onClick={closeSidebar}
       />
-      <div className={"aSidebarWrap" + (navOpen ? " aSidebarWrapOpen" : "")}>
+      <div
+        className={
+          "aSidebarWrap" +
+          (navOpen ? " aSidebarWrapOpen" : "") +
+          (collapsed ? " aSidebarWrapCollapsed" : "")
+        }
+      >
         <AdminSidebar
           pendingCount={pendingRequests.length}
           pathname={pathname}
           onNavigate={() => setNavOpen(false)}
+          onClose={closeSidebar}
         />
       </div>
       <div className="aMain">
-        <AdminTopbar onMenu={() => setNavOpen(true)} />
+        <AdminTopbar onMenu={openSidebar} />
         <main className="aContent">{children}</main>
       </div>
     </div>

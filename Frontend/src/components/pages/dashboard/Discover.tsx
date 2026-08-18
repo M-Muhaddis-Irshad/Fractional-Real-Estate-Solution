@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import PropertyCard from "@/components/PropertyCard";
 import EmptyState from "@/components/EmptyState";
@@ -82,7 +83,9 @@ export default function Discover() {
 
       <div className="dDiscoverBar">
         <div className="searchBox">
-          <span className="searchIcon">⌕</span>
+          <span className="searchIcon">
+            <Search size={14} />
+          </span>
           <input
             className="input"
             placeholder="Search by city, asset type or yield..."
@@ -106,7 +109,7 @@ export default function Discover() {
       {visible.length === 0 ? (
         <div className="card">
           <EmptyState
-            icon="⌕"
+            icon={<Search size={22} />}
             title="No assets match your search"
             sub="Try a different keyword or clear your filters."
           />

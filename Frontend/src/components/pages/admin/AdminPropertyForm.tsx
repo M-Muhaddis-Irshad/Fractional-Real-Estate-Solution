@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import type { Property } from "@/lib/types";
 
@@ -216,7 +217,7 @@ export default function AdminPropertyForm({ id }: { id?: string }) {
           <p className="pageSub">New listings require admin approval before they go live.</p>
         </div>
         <Link href="/admin/properties" className="btn btnGhost">
-          ← Back to properties
+          <ArrowLeft size={13} /> Back to properties
         </Link>
       </div>
 

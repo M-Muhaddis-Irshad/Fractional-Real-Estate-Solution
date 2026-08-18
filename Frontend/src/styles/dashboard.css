@@ -7,18 +7,76 @@
   display: flex;
 }
 
-/* ---------- Sidebar ---------- */
-.dSidebar {
+/* ---------- Sidebar (collapsible) ---------- */
+.dSidebarWrap {
+  flex: 0 0 var(--sidebar-w);
   width: var(--sidebar-w);
-  flex-shrink: 0;
+  min-width: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  transition: flex-basis 0.22s ease, width 0.22s ease;
+}
+.dSidebarWrapCollapsed {
+  flex-basis: 0;
+  width: 0;
+}
+.dSidebar {
+  position: relative;
+  width: var(--sidebar-w);
+  height: 100%;
   background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
-  height: 100vh;
   padding: 18px 14px;
+}
+.dSidebarClose {
+  position: absolute;
+  top: 14px;
+  right: 10px;
+  z-index: 2;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.dSidebar:hover .dSidebarClose,
+.dSidebarClose:focus-visible {
+  display: inline-flex;
+}
+.dSidebarClose:hover {
+  color: var(--ink);
+  background: var(--surface-3);
+}
+.dMenuBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 15px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.dMenuBtn:hover {
+  color: var(--brand);
+  border-color: var(--brand);
 }
 .dBrand {
   display: flex;
@@ -808,7 +866,7 @@
 }
 
 .cryptoPayIcon {
-  background: linear-gradient(135deg, var(--brand), #f59e0b);
+  background: linear-gradient(135deg, var(--brand), var(--gold-2));
   color: #fff;
 }
 .cryptoSteps {
@@ -998,6 +1056,23 @@
 }
 .dProfileAvatar {
   padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.dProfileAvatar .avatarLg {
+  width: 72px;
+  height: 72px;
+  font-size: 22px;
+}
+.dAvatarActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 150px;
 }
 .dFormStack {
   display: flex;
@@ -1064,82 +1139,213 @@
 }
 
 /* ============================================================
-   Auth page (shared with admin)
+   Auth pages — split-screen brand panel + form (ref: UI/Auth/ref 1)
    ============================================================ */
 .authPage {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 20px;
   position: relative;
   background: var(--bg);
 }
-.authBg {
+
+/* Left brand panel — deep navy + gold glows, matching the Hero's dark band
+   (#141b3c -> #0d1f2d) instead of the old royal-blue gradient. The panel stays
+   dark in both themes (established pattern for always-dark brand panels). */
+.authSide {
+  position: relative;
+  flex: 0 0 54%;
+  width: 54%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  overflow: hidden;
+  background:
+    radial-gradient(720px 480px at 110% -10%, rgba(244, 172, 46, 0.14), transparent 60%),
+    radial-gradient(560px 420px at -12% 112%, rgba(244, 172, 46, 0.1), transparent 60%),
+    linear-gradient(168deg, #141b3c 0%, #0d1f2d 100%);
+}
+.authSide::after {
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(900px 500px at 82% -10%, rgba(79, 70, 229, 0.16), transparent 60%),
-    radial-gradient(700px 420px at 8% 108%, rgba(14, 165, 233, 0.12), transparent 60%);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 75%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 75%);
+}
+.authSideInner {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 48px 36px;
+}
+.authSideBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+}
+.authSideLogo {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35), 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+.authSideBody {
+  margin: auto 0;
+  padding: 44px 0;
+}
+.authSideKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffd166;
+  background: rgba(244, 172, 46, 0.16);
+  border: 1px solid rgba(244, 172, 46, 0.42);
+  padding: 7px 13px;
+  border-radius: 999px;
+  margin-bottom: 22px;
+}
+.authSideKicker .authDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffd166;
+  box-shadow: 0 0 0 0 rgba(255, 209, 102, 0.6);
+  animation: lnPulse 2s infinite;
+}
+.authSideTitle {
+  font-size: clamp(30px, 3.2vw, 46px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: #fff;
+}
+.authSideTitle em {
+  font-style: normal;
+  background: linear-gradient(120deg, #ffd166, #f4ac2e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.authSideSub {
+  margin-top: 18px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 420px;
+}
+.authSidePoints {
+  list-style: none;
+  margin: 26px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.authSidePoints li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.92);
+}
+.authSidePoints li::before {
+  content: "✓";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffd166;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.authSideFoot {
+  display: flex;
+  gap: 34px;
+  padding-top: 26px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+.authSideStatVal {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+}
+.authSideStatLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+  margin-top: 3px;
+}
+
+/* Right form panel */
+.authMain {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 36px;
+  background: var(--bg);
+}
+.authMain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(560px 380px at 50% -10%, var(--brand-soft), transparent 62%);
 }
 .authCard {
   position: relative;
   width: 100%;
-  max-width: 420px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
   animation: popIn 0.25s ease;
 }
 .authCardAdmin {
-  border-color: var(--brand-border);
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--brand-border);
+  border-radius: 18px;
   box-shadow: 0 20px 60px var(--glow);
 }
 .authBrand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--ink);
-  margin-bottom: 22px;
+  display: none;
 }
 .authLogo {
   width: 30px;
   height: 30px;
   object-fit: contain;
 }
-.authAdminBanner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, var(--brand), #7c3aed);
-  color: #fff;
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 18px;
-}
-.authAdminIcon {
-  font-size: 20px;
-}
-.authAdminTitle {
-  font-weight: 700;
-  font-size: 13.5px;
-}
-.authAdminSub {
-  font-size: 11.5px;
-  opacity: 0.85;
-  margin-top: 2px;
-}
 .authTabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 4px;
   background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 4px;
   margin-bottom: 20px;
@@ -1162,11 +1368,6 @@
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-sm);
-}
-.authTabAdmin.authTabActive {
-  background: var(--brand);
-  color: #fff;
-  box-shadow: 0 4px 12px var(--glow);
 }
 .authForm {
   display: flex;
@@ -1200,7 +1401,22 @@
 }
 .authCheck input {
   margin-top: 2px;
-  accent-color: var(--brand);
+  accent-color: var(--gold);
+}
+.authTermsLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--gold-ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.authTermsLink:hover {
+  opacity: 0.8;
 }
 .authHint {
   border: 1px dashed var(--border-strong);
@@ -1294,24 +1510,49 @@
   position: absolute;
   top: 18px;
   right: 18px;
+  z-index: 5;
   background: var(--surface);
   color: var(--muted);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
   padding: 8px 14px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .authThemeBtn:hover {
   color: var(--ink);
-  border-color: var(--border-strong);
+  border-color: var(--brand);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 900px) {
+  .authSide {
+    display: none;
+  }
+  .authMain {
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  .authBrand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 22px;
+  }
 }
 
 /* Responsive */
 @media (max-width: 960px) {
-  .dSidebar {
+  .dSidebarWrap {
+    display: none;
+  }
+  .dMenuBtn {
     display: none;
   }
   .dMobileNav {
@@ -1830,5 +2071,533 @@
   }
   .onbTrack {
     transition: none;
+  }
+}
+
+/* ============================================================
+   Investor Dashboard — redesigned to match UI/1 INVESTOR DASHBOARD.jpg
+   ============================================================ */
+
+/* Serif display face used for the page title, stat figures, section
+   headings and property card names (body stays sans-serif). */
+.dashTitle,
+.dashStatValue,
+.dashSectionTitle,
+.dashCardTitle,
+.dashPropName {
+  font-family: var(--font-serif);
+}
+
+/* ---------- Page heading ---------- */
+.dashHead {
+  margin-bottom: 24px;
+}
+.dashTitle {
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.dashSub {
+  margin-top: 6px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* ---------- 3-column stat row ---------- */
+.dashStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 30px;
+}
+.dashStat {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  padding: 20px 22px;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.dashStat:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.dashStatDark {
+  background: linear-gradient(155deg, var(--navy-ink), var(--navy-ink-2));
+  border-color: transparent;
+  color: #fff;
+}
+.dashStatHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.dashStatLabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+.dashStatDark .dashStatLabel {
+  color: rgba(255, 255, 255, 0.62);
+}
+.dashStatIcon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 15px;
+}
+.dashStatDark .dashStatIcon {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--gold-2);
+}
+.dashStatValue {
+  margin-top: 12px;
+  font-size: clamp(26px, 2.6vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.dashStatDark .dashStatValue {
+  color: #fff;
+}
+.dashStatSub {
+  margin-top: 9px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.dashStatDark .dashStatSub {
+  color: rgba(255, 255, 255, 0.55);
+}
+.dashStatTrend {
+  margin-top: 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dashPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+.dashPillUp {
+  color: var(--gold-ink);
+  background: var(--gold-soft);
+}
+.dashPillDown {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+.dashStatDark .dashPillUp {
+  color: var(--gold-2);
+  background: rgba(232, 168, 95, 0.18);
+}
+.dashStatDark .dashPillDown {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.22);
+}
+
+/* ---------- Two-column layout (owned shares | pending/activity) ---------- */
+.dashColumns {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.dashMainCol {
+  min-width: 0;
+}
+.dashSideCol {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+.dashSectionHead,
+.dashCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dashSectionHead {
+  margin-bottom: 14px;
+}
+.dashSectionTitle,
+.dashCardTitle {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.dashViewAll {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+.dashViewAll:hover {
+  color: var(--brand);
+}
+
+/* ---------- Owned property share cards ---------- */
+.dashProps {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+.dashProp {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.dashProp:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+.dashPropMedia {
+  position: relative;
+  display: block;
+  height: 148px;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+.dashPropMediaFallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+.dashPropShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 30%, rgba(11, 18, 34, 0.62) 100%);
+}
+.dashPropOverlay {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dashPropName {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
+  line-height: 1.15;
+}
+.dashPropLoc {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+}
+.dashPropBody {
+  padding: 16px;
+}
+.dashPropStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+.dashPropStatLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.dashPropStatVal {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.dashPropBar {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+  margin-bottom: 13px;
+}
+.dashPropBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--navy-ink), var(--navy-ink-2));
+  transition: width 0.4s ease;
+}
+.dashPropFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.dashPropYield {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--gold-ink);
+}
+[data-theme="dark"] .dashPropYield {
+  color: var(--gold-2);
+}
+.dashPropDetails {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+.dashPropDetails:hover {
+  color: var(--brand);
+}
+
+/* ---------- Right column cards ---------- */
+.dashCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.dashCardHead {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.dashCardEmpty {
+  padding: 24px 18px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Pending requests */
+.dashReqList {
+  padding: 6px 0;
+}
+.dashReq {
+  display: flex;
+  gap: 12px;
+  padding: 13px 18px;
+  transition: background 0.12s ease;
+}
+.dashReq:hover {
+  background: var(--brand-soft);
+}
+.dashReqIcon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--gold-soft);
+  font-size: 15px;
+}
+.dashReqBody {
+  min-width: 0;
+  flex: 1;
+}
+.dashReqTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.dashReqMeta {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.dashReqBar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+  margin-top: 10px;
+}
+.dashReqBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-2));
+}
+.dashReqStep {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold-ink);
+}
+[data-theme="dark"] .dashReqStep {
+  color: var(--gold-2);
+}
+
+/* Recent activity */
+.dashActList {
+  padding: 6px 0;
+}
+.dashAct {
+  display: flex;
+  gap: 12px;
+  padding: 12px 18px;
+  transition: background 0.12s ease;
+}
+.dashAct:hover {
+  background: var(--brand-soft);
+}
+.dashActIcon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 14px;
+  margin-top: 2px;
+}
+.dashActBody {
+  min-width: 0;
+  flex: 1;
+}
+.dashActTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.dashActTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dashActDate {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--faint);
+}
+.dashActSub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.dashActAmt {
+  margin-top: 4px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--gold-ink);
+}
+[data-theme="dark"] .dashActAmt {
+  color: var(--gold-2);
+}
+
+/* ---------- Shell restyle (sidebar + topbar) ---------- */
+
+/* Active sidebar nav item — deep-navy filled pill per the reference. */
+.dNavItemActive {
+  background: var(--navy-ink);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(15, 27, 51, 0.3);
+}
+.dNavItemActive:hover {
+  background: var(--navy-ink);
+  color: #fff;
+  transform: none;
+}
+
+/* Sidebar profile card pinned to the bottom, with a settings gear. */
+.dSidebarFoot {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin: 12px 4px 0;
+  padding: 10px;
+}
+.dSidebarGear {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.dSidebarGear:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+/* Topbar CTA (replaces the reference's "New Transaction" — the app's
+   equivalent action is exploring assets / investing from the marketplace). */
+.dInvestBtn {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 10px 16px;
+}
+
+/* Pill-shaped search input (reference shows a pill with ⌘K hint). */
+.dSearch input {
+  border-radius: 999px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1180px) {
+  .dashColumns {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .dashStats {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .dInvestBtn {
+    display: none;
+  }
+  .dashPropStats {
+    grid-template-columns: 1fr 1fr;
   }
 }

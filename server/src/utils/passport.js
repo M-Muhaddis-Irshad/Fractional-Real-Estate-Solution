@@ -4,19 +4,20 @@ import User from "../models/User.js";
 import { getSettings } from "../models/Settings.js";
 import { logActivity } from "./activity.js";
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
-
 /**
- * Register the Google OAuth strategy once. If the env vars are missing the
- * strategy is skipped (routes then return a clean "not configured" error
- * instead of crashing), so Google auth is an additive feature.
+ * Register the Google OAuth strategy once. Env vars are read LAZILY inside this
+ * function — not at module scope — because local dev loads server/.env via
+ * dotenv AFTER ES module imports are evaluated (see src/index.js). Reading them
+ * at module load would capture `undefined` and silently disable Google auth.
  */
 export function configurePassport() {
   if (passport._fluxGoogleConfigured) return passport;
 
-  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+  const clientID = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const callbackURL = process.env.GOOGLE_CALLBACK_URL;
+
+  if (!clientID || !clientSecret) {
     console.warn("[auth] GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not set — Google sign-in disabled");
     return passport;
   }
@@ -24,9 +25,9 @@ export function configurePassport() {
   passport.use(
     new GoogleStrategy(
       {
-        clientID: GOOGLE_CLIENT_ID,
-        clientSecret: GOOGLE_CLIENT_SECRET,
-        callbackURL: GOOGLE_CALLBACK_URL,
+        clientID,
+        clientSecret,
+        callbackURL,
         passReqToCallback: true,
       },
       async (req, accessToken, refreshToken, profile, done) => {

@@ -8,35 +8,102 @@
   overflow-x: clip;
 }
 
-/* ---------- Nav ---------- */
+/* ---------- Theme-aware hero / stat-banner / footer tokens (Issue 3) ----------
+   The hero, stat banner and footer were hardcoded dark-navy (#0d1f2d). Per
+   approval they now follow the theme toggle: light values below, dark overrides
+   in [data-theme="dark"]. */
+:root {
+  --lnHeroBg: linear-gradient(180deg, #eef0f7 0%, #ffffff 100%);
+  --lnHeroGlow1: rgba(217, 142, 59, 0.1);
+  --lnHeroGlow2: rgba(244, 172, 46, 0.14);
+  --lnHeroBadgeColor: var(--gold-ink);
+  --lnHeroBadgeBg: rgba(244, 172, 46, 0.14);
+  --lnHeroBadgeBorder: rgba(217, 142, 59, 0.45);
+  --lnHeroTitle: var(--ink);
+  --lnHeroSub: var(--muted);
+  --lnHeroGhostBg: rgba(15, 23, 42, 0.04);
+  --lnHeroGhostBorder: var(--border-strong);
+  --lnHeroGhostColor: var(--ink-2);
+  --lnHeroGhostHoverBg: rgba(15, 23, 42, 0.08);
+  --lnHeroStatVal: var(--ink);
+  --lnHeroStatLabel: var(--muted);
+  --lnHeroStatDivider: var(--border);
+  --lnHeroTrustColor: var(--muted);
+  --lnHeroTrustBg: var(--surface-2);
+  --lnHeroTrustBorder: var(--border-strong);
+
+  --lnFooterBg: var(--bg);
+  --lnFooterBorder: var(--border);
+  --lnFooterBrand: var(--ink);
+  --lnFooterBody: var(--muted);
+  --lnFooterHead: var(--ink);
+  --lnFooterLink: var(--muted);
+  --lnFooterLinkHover: var(--gold-ink);
+  --lnFooterBottomBorder: var(--border);
+  --lnFooterBottom: var(--faint);
+}
+[data-theme="dark"] {
+  --lnHeroBg: linear-gradient(180deg, #141b3c 0%, #0d1f2d 100%);
+  --lnHeroGlow1: rgba(217, 142, 59, 0.28);
+  --lnHeroGlow2: rgba(244, 172, 46, 0.12);
+  --lnHeroBadgeColor: #ffd166;
+  --lnHeroBadgeBg: rgba(244, 172, 46, 0.14);
+  --lnHeroBadgeBorder: rgba(244, 172, 46, 0.42);
+  --lnHeroTitle: #fff;
+  --lnHeroSub: rgba(255, 255, 255, 0.72);
+  --lnHeroGhostBg: rgba(255, 255, 255, 0.08);
+  --lnHeroGhostBorder: rgba(255, 255, 255, 0.22);
+  --lnHeroGhostColor: rgba(255, 255, 255, 0.9);
+  --lnHeroGhostHoverBg: rgba(255, 255, 255, 0.14);
+  --lnHeroStatVal: #fff;
+  --lnHeroStatLabel: rgba(255, 255, 255, 0.55);
+  --lnHeroStatDivider: rgba(255, 255, 255, 0.16);
+  --lnHeroTrustColor: rgba(255, 255, 255, 0.62);
+  --lnHeroTrustBg: rgba(255, 255, 255, 0.05);
+  --lnHeroTrustBorder: rgba(255, 255, 255, 0.18);
+
+  --lnFooterBg: #0d1f2d;
+  --lnFooterBorder: rgba(255, 255, 255, 0.08);
+  --lnFooterBrand: #fff;
+  --lnFooterBody: rgba(255, 255, 255, 0.6);
+  --lnFooterHead: #fff;
+  --lnFooterLink: rgba(255, 255, 255, 0.68);
+  --lnFooterLinkHover: #ffd166;
+  --lnFooterBottomBorder: rgba(255, 255, 255, 0.1);
+  --lnFooterBottom: rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- Nav — floating rounded pill, theme-aware (ref: Reference 2; Issue 4) ---------- */
 .lnNav {
   position: sticky;
-  top: 0;
+  top: 14px;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-[data-theme="dark"] .lnNav {
-  background: rgba(11, 15, 26, 0.8);
-}
-.lnNavScrolled {
-  border-bottom-color: var(--border);
-  box-shadow: 0 6px 22px rgba(15, 23, 42, 0.06);
-}
-[data-theme="dark"] .lnNavScrolled {
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  padding: 0 16px;
+  background: transparent;
 }
 .lnNavInner {
-  max-width: 1180px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 0 24px;
-  height: 66px;
+  padding: 0 14px 0 22px;
+  height: 60px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: flex-start;
+  gap: 28px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.lnNavScrolled .lnNavInner {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16);
+}
+[data-theme="dark"] .lnNavScrolled .lnNavInner {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+.lnActions {
+  margin-left: auto;
 }
 .lnBrand {
   display: flex !important;
@@ -51,27 +118,25 @@
 .lnLogo {
   width: 30px;
   height: 30px;
-  object-fit: contain;
-  padding: 3px;
+  object-fit: cover;
   border-radius: 9px;
-  background: #f4f6fb;
-  box-shadow: 0 0 0 1px var(--brand-border), 0 0 14px var(--glow);
+  box-shadow: 0 0 0 1px var(--border-strong), 0 0 12px rgba(217, 142, 59, 0.35);
   transition: box-shadow 0.2s ease;
   flex-shrink: 0;
 }
 .lnBrand:hover .lnLogo {
-  box-shadow: 0 0 0 1px var(--brand-border), 0 0 20px var(--glow);
+  box-shadow: 0 0 0 1px var(--border-strong), 0 0 18px rgba(217, 142, 59, 0.55);
 }
 .lnLinks {
   display: flex;
   align-items: center;
-  gap: 26px;
+  gap: 24px;
 }
 .lnLinks a {
   position: relative;
   font-size: 13.5px;
-  font-weight: 500;
-  color: var(--ink-2);
+  font-weight: 600;
+  color: var(--muted);
   transition: color 0.15s ease;
   padding: 4px 0;
 }
@@ -83,13 +148,13 @@
   bottom: -2px;
   height: 2px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--brand), var(--accent-2));
+  background: linear-gradient(90deg, #f4ac2e, #ffd166);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.2s ease;
 }
 .lnLinks a:hover {
-  color: var(--brand);
+  color: var(--ink);
 }
 .lnLinks a:hover::after {
   transform: scaleX(1);
@@ -106,16 +171,15 @@
   width: 38px;
   height: 38px;
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 16px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 .lnThemeToggle:hover {
-  color: var(--brand);
-  border-color: var(--brand);
+  color: var(--gold-ink);
+  border-color: var(--gold);
   transform: rotate(12deg);
 }
 
@@ -127,10 +191,10 @@
   gap: 5px;
   width: 40px;
   height: 40px;
-  padding: 9px;
+  padding: 10px;
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  background: var(--surface);
+  border-radius: 999px;
+  background: var(--surface-2);
   cursor: pointer;
 }
 .lnBurger span {
@@ -153,7 +217,11 @@
   flex-direction: column;
   gap: 2px;
   padding: 10px 16px 18px;
-  border-top: 1px solid var(--border);
+  margin: 10px 16px 0;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
   animation: lnMenuIn 0.22s ease;
 }
 .lnMobileMenu > a {
@@ -165,8 +233,8 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 .lnMobileMenu > a:hover {
-  background: var(--brand-soft);
-  color: var(--brand);
+  background: var(--gold-soft);
+  color: var(--ink);
 }
 .lnMobileActions {
   display: flex;
@@ -179,12 +247,20 @@
   to { opacity: 1; transform: none; }
 }
 
-/* ---------- Hero ---------- */
+/* ---------- Hero — theme-aware band (Issue 3) ---------- */
 .lnHero {
+  position: relative;
+  max-width: none;
+  margin: 0 auto;
+  padding: 76px 24px 64px;
+  background: var(--lnHeroBg);
+  overflow: hidden;
+}
+.lnHeroWrap {
   position: relative;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 72px 24px 40px;
+  width: 100%;
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: 48px;
@@ -195,8 +271,8 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(700px 420px at 12% -8%, var(--brand-soft), transparent 62%),
-    radial-gradient(640px 380px at 92% 8%, rgba(14, 165, 233, 0.1), transparent 60%);
+    radial-gradient(820px 480px at 14% -10%, var(--lnHeroGlow1), transparent 62%),
+    radial-gradient(700px 460px at 92% 18%, var(--lnHeroGlow2), transparent 60%);
 }
 .lnHeroInner {
   position: relative;
@@ -208,9 +284,9 @@
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: var(--brand);
-  background: var(--brand-soft);
-  border: 1px solid var(--brand-border);
+  color: var(--lnHeroBadgeColor);
+  background: var(--lnHeroBadgeBg);
+  border: 1px solid var(--lnHeroBadgeBorder);
   padding: 7px 14px;
   border-radius: 999px;
   margin-bottom: 22px;
@@ -219,24 +295,24 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  background: var(--lnHeroBadgeColor);
+  box-shadow: 0 0 0 0 rgba(255, 209, 102, 0.6);
   animation: lnPulse 2s infinite;
 }
 @keyframes lnPulse {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255, 209, 102, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 209, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 209, 102, 0); }
 }
 .lnHeroTitle {
   font-size: clamp(38px, 5.2vw, 60px);
   font-weight: 800;
   line-height: 1.06;
   letter-spacing: -0.03em;
-  color: var(--ink);
+  color: var(--lnHeroTitle);
 }
 .lnGrad {
-  background: var(--grad);
+  background: linear-gradient(120deg, #ffd166, #f4ac2e);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -245,7 +321,7 @@
   margin-top: 20px;
   font-size: 16.5px;
   line-height: 1.65;
-  color: var(--muted);
+  color: var(--lnHeroSub);
   max-width: 520px;
 }
 .lnHeroActions {
@@ -258,6 +334,17 @@
   font-size: 14.5px;
   border-radius: 14px;
 }
+.lnHeroActions .btnGhost {
+  background: var(--lnHeroGhostBg);
+  border-color: var(--lnHeroGhostBorder);
+  color: var(--lnHeroGhostColor);
+}
+.lnHeroActions .btnGhost:hover:not(:disabled) {
+  background: var(--lnHeroGhostHoverBg);
+  border-color: var(--lnHeroGhostBorder);
+  color: var(--lnHeroTitle);
+  box-shadow: none;
+}
 .lnHeroStats {
   display: grid;
   grid-template-columns: repeat(4, auto);
@@ -267,7 +354,7 @@
 }
 .lnHeroStat {
   padding-right: 28px;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--lnHeroStatDivider);
 }
 .lnHeroStat:last-child {
   border-right: none;
@@ -278,13 +365,14 @@
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.02em;
+  color: var(--lnHeroStatVal);
 }
 .lnHeroStatLabel {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--muted);
+  color: var(--lnHeroStatLabel);
   margin-top: 3px;
 }
 .lnTrustRow {
@@ -297,11 +385,11 @@
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: var(--faint);
-  border: 1px solid var(--border);
+  color: var(--lnHeroTrustColor);
+  border: 1px solid var(--lnHeroTrustBorder);
   border-radius: 8px;
   padding: 6px 10px;
-  background: var(--surface);
+  background: var(--lnHeroTrustBg);
 }
 
 /* Hero visual */
@@ -366,7 +454,7 @@
 .lnChart span {
   flex: 1;
   border-radius: 5px 5px 2px 2px;
-  background: linear-gradient(180deg, var(--brand-2), rgba(99, 102, 241, 0.25));
+  background: linear-gradient(180deg, var(--brand-2), rgba(217, 142, 59, 0.25));
   transition: transform 0.2s ease;
 }
 .lnChart span:hover {
@@ -496,6 +584,26 @@
   line-height: 1.6;
 }
 
+/* Left-aligned section head (marketplace block, ref: Reference 1) */
+.lnSectionHeadLeft {
+  text-align: left;
+  margin-left: 0;
+  margin-right: auto;
+  margin-bottom: 20px;
+}
+.lnPropHead {
+  margin-bottom: 36px;
+}
+.lnPropFilters {
+  margin-top: 4px;
+}
+.lnPropFilters .pillActive {
+  background: linear-gradient(135deg, var(--gold), var(--gold-2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(217, 142, 59, 0.35);
+}
+
 /* Property grid */
 .lnPropGrid {
   display: grid;
@@ -523,16 +631,16 @@
 .propCard:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--brand-border);
+  border-color: rgba(217, 142, 59, 0.45);
 }
 .propThumb {
   position: relative;
-  height: 150px;
+  display: block;
+  height: 180px;
   background-size: cover;
   background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-decoration: none;
+  color: inherit;
 }
 .propThumbInitials {
   font-family: var(--font-display);
@@ -540,22 +648,42 @@
   font-weight: 800;
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Top-left asset type badge (ref: Reference 1 cards) */
+.propTypeBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
 }
 .propThumbTop {
   position: absolute;
   top: 12px;
-  left: 12px;
   right: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 6px;
 }
 .propYield {
   font-size: 11px;
   font-weight: 700;
   color: #fff;
-  background: rgba(16, 185, 129, 0.92);
+  background: linear-gradient(135deg, #d98e3b, #f4ac2e);
   padding: 4px 9px;
   border-radius: 999px;
   backdrop-filter: blur(4px);
@@ -570,6 +698,20 @@
   border-radius: 999px;
   backdrop-filter: blur(4px);
 }
+/* Funding-progress pill (ref: Reference 1 status pills) */
+.propFundPill {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 700;
+  color: #241c10;
+  background: linear-gradient(135deg, var(--gold), var(--gold-2));
+  padding: 4px 10px;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+}
 .propBody {
   padding: 16px;
   display: flex;
@@ -582,6 +724,11 @@
   font-size: 15px;
   font-weight: 700;
   line-height: 1.25;
+  color: inherit;
+  text-decoration: none;
+}
+.propName:hover {
+  color: var(--gold-ink);
 }
 .propMeta {
   font-size: 12.5px;
@@ -591,7 +738,6 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
-  margin-top: auto;
   padding-top: 8px;
 }
 .propFundLabel {
@@ -599,11 +745,15 @@
   color: var(--faint);
   font-weight: 600;
 }
-.propFoot {
+/* Gold progress fill on cards */
+.propCard .progressFill {
+  background: linear-gradient(90deg, var(--gold), var(--accent-2));
+}
+.propPriceRow {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 8px;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
 }
 .propPrice {
   font-family: var(--font-display);
@@ -614,10 +764,29 @@
   font-size: 11px;
   color: var(--faint);
 }
+.propFoot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 12px;
+}
+/* Dual-button card footer (ref: Reference 1 "View Details" + "Book Now") */
+.propFootBtns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+.propFootBtns .btn {
+  padding: 9px 10px;
+  font-size: 12.5px;
+  border-radius: 10px;
+}
 .propCta {
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--brand);
+  color: var(--gold-ink);
 }
 
 /* Steps */
@@ -645,8 +814,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: var(--brand-soft);
-  color: var(--brand);
+  background: linear-gradient(135deg, var(--gold-soft), rgba(244, 172, 46, 0.14));
+  color: var(--gold-ink);
   font-size: 19px;
 }
 .lnStepNum {
@@ -671,46 +840,55 @@
   margin-top: 8px;
 }
 
-/* Features */
-.lnFeatureGrid {
+/* Features — alternating image + 2-column list (ref: Reference 1) */
+.lnSplit {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 56px;
+  align-items: center;
 }
-.lnFeature {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-l);
-  padding: 24px;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+.lnSplitMedia .lnSplitPhoto {
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
 }
-.lnFeature:hover {
-  transform: translateY(-3px);
-  border-color: var(--brand-border);
-  box-shadow: var(--shadow-md);
+.lnSplitBody .lnSectionTitle {
+  margin-top: 12px;
 }
-.lnFeatureIcon {
-  width: 40px;
-  height: 40px;
+.lnSplitBody .lnSectionSub {
+  margin-bottom: 26px;
+}
+.lnSplitList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 26px;
+}
+.lnSplitItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.lnSplitIcon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 11px;
-  background: linear-gradient(135deg, var(--brand-soft), rgba(168, 85, 247, 0.12));
-  color: var(--brand);
-  font-size: 17px;
+  background: linear-gradient(135deg, var(--gold-soft), rgba(244, 172, 46, 0.14));
+  color: var(--gold-ink);
+  font-size: 16px;
 }
-.lnFeatureTitle {
+.lnSplitItemTitle {
   font-family: var(--font-display);
-  font-size: 15.5px;
+  font-size: 14.5px;
   font-weight: 700;
-  margin-top: 16px;
 }
-.lnFeatureText {
-  font-size: 13.5px;
+.lnSplitItemText {
+  font-size: 13px;
   color: var(--muted);
-  line-height: 1.65;
-  margin-top: 8px;
+  line-height: 1.6;
+  margin-top: 4px;
 }
 
 /* Quotes */
@@ -759,7 +937,7 @@
   font-size: 12px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, var(--brand), #a855f7);
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
 }
 .lnQuoteName {
   font-size: 13px;
@@ -767,6 +945,42 @@
 }
 .lnQuoteRole {
   font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* Trust intro — large member count + CTA (ref: Reference 1 "10K+ Members") */
+.lnTrustHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.lnTrustHeadText {
+  max-width: 560px;
+}
+.lnTrustHeadText .lnSectionTitle {
+  text-align: left;
+}
+.lnTrustCount {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 16px;
+}
+.lnTrustNum {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #d98e3b, #f4ac2e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.lnTrustCountLabel {
+  font-size: 14px;
+  font-weight: 600;
   color: var(--muted);
 }
 
@@ -786,7 +1000,7 @@
   transition: border-color 0.18s ease;
 }
 .lnFaqOpen {
-  border-color: var(--brand-border);
+  border-color: rgba(217, 142, 59, 0.4);
 }
 .lnFaqQ {
   width: 100%;
@@ -806,7 +1020,7 @@
 }
 .lnFaqToggle {
   font-size: 18px;
-  color: var(--brand);
+  color: var(--gold-ink);
   flex-shrink: 0;
 }
 .lnFaqA {
@@ -845,8 +1059,8 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--brand);
-  background: var(--brand-soft);
+  color: var(--gold-ink);
+  background: var(--gold-soft);
   padding: 4px 9px;
   border-radius: 999px;
 }
@@ -877,13 +1091,13 @@
 }
 .lnCtaInner {
   background:
-    radial-gradient(700px 300px at 85% -20%, rgba(168, 85, 247, 0.25), transparent 60%),
-    linear-gradient(135deg, var(--brand), #7c3aed);
+    radial-gradient(700px 300px at 85% -20%, rgba(255, 255, 255, 0.3), transparent 60%),
+    linear-gradient(135deg, #f6b440, #f4ac2e 55%, #e8941f);
   border-radius: 26px;
   padding: 56px 32px;
   text-align: center;
-  color: #fff;
-  box-shadow: 0 24px 60px var(--glow);
+  color: #241c10;
+  box-shadow: 0 24px 60px rgba(244, 172, 46, 0.35);
 }
 .lnCtaTitle {
   font-size: clamp(26px, 3.4vw, 38px);
@@ -892,30 +1106,72 @@
 }
 .lnCtaSub {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(36, 28, 16, 0.8);
   max-width: 460px;
   margin: 14px auto 26px;
   line-height: 1.6;
 }
 .lnCtaInner .btnPrimary {
-  background: #fff;
-  color: var(--brand-dark);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+  background: #0d1f2d;
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
 }
 .lnCtaInner .btnPrimary:hover:not(:disabled) {
   transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
 }
 .lnCtaNote {
   margin-top: 16px;
   font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(36, 28, 16, 0.7);
 }
 
-/* Footer */
+/* Stat banner — theme-aware band, one large gold number (ref: Reference 1
+   "PKR 1.9Bn+ invested"; Issue 3 — follows theme like the hero) */
+.lnStatBanner {
+  background: var(--lnHeroBg);
+  padding: 64px 24px;
+  text-align: center;
+}
+.lnStatBannerInner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.lnStatBannerLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lnHeroStatLabel);
+  margin-bottom: 12px;
+}
+.lnStatBannerValue {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 6vw, 72px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  background: linear-gradient(120deg, #d98e3b, #f4ac2e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.lnStatBannerSub {
+  margin: 14px auto 0;
+  max-width: 460px;
+  font-size: 14.5px;
+  color: var(--lnHeroSub);
+  line-height: 1.6;
+}
+
+/* Footer — theme-aware (Issue 3) */
 .lnFooter {
-  background: var(--surface);
-  border-top: 1px solid var(--border);
+  background: var(--lnFooterBg);
+  border-top: 1px solid var(--lnFooterBorder);
   margin-top: 72px;
+}
+.lnFooter .lnBrand {
+  color: var(--lnFooterBrand);
 }
 .lnFooterInner {
   max-width: 1180px;
@@ -933,7 +1189,7 @@
 }
 .lnFooterBrandCol p {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--lnFooterBody);
   line-height: 1.7;
   margin-top: 14px;
   max-width: 300px;
@@ -943,31 +1199,31 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--ink);
+  color: var(--lnFooterHead);
   margin-bottom: 14px;
 }
 .lnFooterCol a {
   display: block;
   font-size: 13.5px;
-  color: var(--muted);
+  color: var(--lnFooterLink);
   padding: 5px 0;
   transition: color 0.15s ease;
 }
 .lnFooterCol a:hover {
-  color: var(--brand);
+  color: var(--lnFooterLinkHover);
 }
 .lnFooterLegal {
   font-size: 12.5px;
-  color: var(--muted);
+  color: var(--lnFooterBody);
   line-height: 1.7;
 }
 .lnFooterBottom {
   max-width: 1180px;
   margin: 0 auto;
   padding: 18px 24px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--lnFooterBottomBorder);
   font-size: 12px;
-  color: var(--faint);
+  color: var(--lnFooterBottom);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -982,18 +1238,20 @@
   display: inline;
   padding: 0;
   font-weight: 600;
-  color: var(--faint);
+  color: var(--lnFooterBottom);
 }
 .lnFooterLegalLinks a:hover {
-  color: var(--brand);
+  color: var(--lnFooterLinkHover);
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .lnHero {
+  .lnHeroWrap {
     grid-template-columns: 1fr;
-    padding-top: 52px;
     gap: 40px;
+  }
+  .lnHero {
+    padding-top: 52px;
   }
   .lnHeroInner {
     text-align: center;
@@ -1025,10 +1283,17 @@
     inset: -8px 20px 26px -8px;
   }
   .lnPropGrid,
-  .lnFeatureGrid,
   .lnQuoteGrid,
   .lnBlogGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .lnSplit {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .lnTrustHead {
+    flex-direction: column;
+    align-items: flex-start;
   }
   .lnSteps {
     grid-template-columns: 1fr;
@@ -1060,10 +1325,15 @@
     padding: 52px 16px;
   }
   .lnPropGrid,
-  .lnFeatureGrid,
   .lnQuoteGrid,
   .lnBlogGrid {
     grid-template-columns: 1fr;
+  }
+  .lnSplitList {
+    grid-template-columns: 1fr;
+  }
+  .lnStatBanner {
+    padding: 48px 16px;
   }
   .lnFloatingCard {
     display: none;
@@ -1074,8 +1344,8 @@
     width: 100%;
     justify-content: center;
     background: transparent;
-    border: 1px dashed var(--brand-border);
-    color: var(--brand);
+    border: 1px dashed rgba(255, 209, 102, 0.6);
+    color: #ffd166;
     font-weight: 600;
     font-size: 13.5px;
     border-radius: 12px;

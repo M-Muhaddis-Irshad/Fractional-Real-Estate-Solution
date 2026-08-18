@@ -20,11 +20,13 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// Public homepage content (used by the landing page).
+// Public homepage content (used by the landing page). Always merged over the
+// DEFAULT_CONTENT fallback so newly-added fields (e.g. trustChips) are present
+// even when content was saved before the field existed.
 router.get("/content", async (req, res, next) => {
   try {
     const settings = await getSettings();
-    res.json({ content: settings.content || DEFAULT_CONTENT });
+    res.json({ content: { ...DEFAULT_CONTENT, ...(settings.content || {}) } });
   } catch (err) {
     next(err);
   }

@@ -1,15 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft, Moon, Sun } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { API_BASE } from "@/lib/api";
+import AuthSideStats from "@/components/AuthSideStats";
+import TermsModal from "@/components/TermsModal";
+import PrivacyModal from "@/components/PrivacyModal";
 
+// Admin access has no separate tab — a superadmin signs in with their regular
+// credentials and is auto-detected + redirected to the admin panel.
 const MODES = [
   { key: "login", label: "Sign in" },
   { key: "register", label: "Create account" },
-  { key: "admin", label: "Admin access" },
 ] as const;
 
 type Mode = (typeof MODES)[number]["key"];
@@ -78,7 +83,7 @@ export default function AuthPage({
   next?: string;
   googleError?: string;
 }) {
-  const { login, adminLogin, register, theme, toggleTheme } = useApp();
+  const { login, register, theme, toggleTheme } = useApp();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [form, setForm] = useState({
@@ -90,6 +95,13 @@ export default function AuthPage({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const set = (field: keyof typeof form) => (
     e: React.ChangeEvent<HTMLInputElement>
@@ -126,17 +138,16 @@ export default function AuthPage({
 
     setSubmitting(true);
     try {
-      let result;
-      if (mode === "admin") {
-        result = await adminLogin(form.email, form.password);
-        router.replace("/admin");
-      } else if (mode === "login") {
-        result = await login(form.email, form.password);
-      } else {
-        result = await register(form);
-      }
-      if (result?.ok && mode !== "admin") {
-        const dest = next && next.startsWith("/") ? next : "/dashboard";
+      const result =
+        mode === "login" ? await login(form.email, form.password) : await register(form);
+      if (result?.ok) {
+        // Superadmins are detected from their credentials and sent to the panel.
+        const dest =
+          result.user?.role === "superadmin"
+            ? "/admin"
+            : next && next.startsWith("/")
+              ? next
+              : "/dashboard";
         router.replace(dest);
       }
     } catch (err) {
@@ -146,153 +157,189 @@ export default function AuthPage({
     }
   };
 
-  const isAdmin = mode === "admin";
-
   return (
     <div className="authPage">
-      <div className="authBg" aria-hidden="true" />
-      <div className={`authCard${isAdmin ? " authCardAdmin" : ""}`}>
-        <div className="authBrand">
-          <img src="/logo/logo.png" alt="Flux" className="authLogo" />
-          <span>Flux</span>
-        </div>
-
-        {isAdmin && (
-          <div className="authAdminBanner">
-            <span className="authAdminIcon">◎</span>
-            <div>
-              <div className="authAdminTitle">Admin panel</div>
-              <div className="authAdminSub">Restricted access. Platform administrators only.</div>
-            </div>
+      {/* Left brand panel (split-screen, ref: UI/Auth/ref 1) */}
+      <aside className="authSide">
+        <div className="authSideInner">
+          <div className="authSideBrand">
+            <img src="/logo/logo.webp" alt="Flux" className="authSideLogo" />
+            <span>Flux</span>
           </div>
-        )}
-
-        <div className="authTabs">
-          {MODES.map((m) => (
-            <button
-              key={m.key}
-              className={
-                "authTab" +
-                (mode === m.key ? " authTabActive" : "") +
-                (m.key === "admin" ? " authTabAdmin" : "")
-              }
-              onClick={() => switchMode(m.key)}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
-
-        {googleError && <div className="errorText authGoogleError">{googleError}</div>}
-
-        {!isAdmin && (
-          <>
-            <a
-              className="btn btnGhost btnBlock btnLg authGoogleBtn"
-              href={`${API_BASE}/api/auth/google`}
-            >
-              <GoogleIcon />
-              Continue with Google
-            </a>
-            <div className="authDivider">
-              <span>or sign in with email</span>
+          <div className="authSideBody">
+            <div className="authSideKicker">
+              <span className="authDot" /> Fractional real-estate investing
             </div>
-          </>
-        )}
+            <h1 className="authSideTitle">
+              Own a fraction.
+              <br />
+              <em>Earn the whole return.</em>
+            </h1>
+            <p className="authSideSub">
+              Access institutional-grade real estate through fractional ownership — secure,
+              transparent, and built for the next generation of global investors.
+            </p>
+            <ul className="authSidePoints">
+              <li>Assets vetted and underwritten by our real-estate team</li>
+              <li>Rental income distributed automatically, every month</li>
+              <li>Ownership recorded immutably, fully transparent</li>
+            </ul>
+          </div>
+          <AuthSideStats />
+        </div>
+      </aside>
 
-        <form className="authForm" onSubmit={handleSubmit}>
-          {mode === "register" && (
-            <label className="field">
-              <span className="fieldLabel">Full name</span>
-              <input
-                className="input"
-                name="name"
-                value={form.name}
-                onChange={set("name")}
-                placeholder="e.g. Alex Vance"
-                autoComplete="name"
-              />
-            </label>
-          )}
+      <main className="authMain">
+        <div className="authCard">
+          <div className="authBrand">
+            <img src="/logo/logo.webp" alt="Flux" className="authLogo" />
+            <span>Flux</span>
+          </div>
 
-          <label className="field">
-            <span className="fieldLabel">Email</span>
-            <input
-              className="input"
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={set("email")}
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
-          </label>
-
-          <label className="field">
-            <span className="fieldLabel">Password</span>
-            <div className="pwWrap">
-              <input
-                className="input"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={form.password}
-                onChange={set("password")}
-                placeholder="••••••••"
-                autoComplete={mode === "login" ? "current-password" : "new-password"}
-              />
+          <div className="authTabs">
+            {MODES.map((m) => (
               <button
-                type="button"
-                className="pwToggle"
-                onClick={() => setShowPassword((s) => !s)}
-                onMouseDown={(e) => e.preventDefault()}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                title={showPassword ? "Hide password" : "Show password"}
+                key={m.key}
+                className={"authTab" + (mode === m.key ? " authTabActive" : "")}
+                onClick={() => switchMode(m.key)}
               >
-                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                {m.label}
               </button>
-            </div>
-          </label>
+            ))}
+          </div>
 
-          {mode === "register" && (
-            <label className="authCheck">
+          {googleError && <div className="errorText authGoogleError">{googleError}</div>}
+
+          <a
+            className="btn btnGhost btnBlock btnLg authGoogleBtn"
+            href={`${API_BASE}/api/auth/google`}
+          >
+            <GoogleIcon />
+            Continue with Google
+          </a>
+          <div className="authDivider">
+            <span>or sign in with email</span>
+          </div>
+
+          <form className="authForm" onSubmit={handleSubmit}>
+            {mode === "register" && (
+              <label className="field">
+                <span className="fieldLabel">Full name</span>
+                <input
+                  className="input"
+                  name="name"
+                  value={form.name}
+                  onChange={set("name")}
+                  placeholder="e.g. Alex Vance"
+                  autoComplete="name"
+                />
+              </label>
+            )}
+
+            <label className="field">
+              <span className="fieldLabel">Email</span>
               <input
-                type="checkbox"
-                checked={form.acceptedTerms}
-                onChange={set("acceptedTerms")}
+                className="input"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={set("email")}
+                placeholder="you@example.com"
+                autoComplete="email"
               />
-              <span>
-                I accept the Terms &amp; Conditions and understand that no real transactions occur.
-              </span>
             </label>
-          )}
 
-          {mode !== "register" && (
-            <div className="authForgotRow">
-              <Link href="/forgot-password">Forgot password?</Link>
-            </div>
-          )}
+            <label className="field">
+              <span className="fieldLabel">Password</span>
+              <div className="pwWrap">
+                <input
+                  className="input"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={set("password")}
+                  placeholder="••••••••"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                />
+                <button
+                  type="button"
+                  className="pwToggle"
+                  onClick={() => setShowPassword((s) => !s)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
+            </label>
 
-          {error && <div className="errorText">{error}</div>}
+            {mode === "register" && (
+              <label className="authCheck">
+                <input
+                  type="checkbox"
+                  checked={form.acceptedTerms}
+                  onChange={set("acceptedTerms")}
+                />
+                <span>
+                  I accept the{" "}
+                  <button
+                    type="button"
+                    className="authTermsLink"
+                    onClick={(e) => {
+                      // View-only: open the terms modal without toggling the checkbox.
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setTermsOpen(true);
+                    }}
+                  >
+                    Terms &amp; Conditions
+                  </button>{" "}
+                  and{" "}
+                  <button
+                    type="button"
+                    className="authTermsLink"
+                    onClick={(e) => {
+                      // View-only: open the privacy modal without toggling the checkbox.
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setPrivacyOpen(true);
+                    }}
+                  >
+                    Privacy Policy
+                  </button>{" "}
+                  and understand that no real transactions occur.
+                </span>
+              </label>
+            )}
 
-          <button className="btn btnPrimary btnBlock btnLg" type="submit" disabled={submitting}>
-            {submitting
-              ? "Please wait…"
-              : mode === "login"
-                ? "Sign in"
-                : mode === "admin"
-                  ? "Enter admin panel"
-                  : "Create account"}
+            {mode !== "register" && (
+              <div className="authForgotRow">
+                <Link href="/forgot-password">Forgot password?</Link>
+              </div>
+            )}
+
+            {error && <div className="errorText">{error}</div>}
+
+          <button className="btn btnGold btnBlock btnLg" type="submit" disabled={submitting}>
+            {submitting ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
           </button>
-        </form>
+          </form>
 
-        <div className="authBack">
-          <Link href="/">← Back to homepage</Link>
+          <div className="authBack">
+            <Link href="/">
+              <ArrowLeft size={13} /> Back to homepage
+            </Link>
+          </div>
         </div>
-      </div>
+      </main>
 
       <button className="authThemeBtn" onClick={toggleTheme}>
-        {theme === "dark" ? "☀ Light mode" : "☾ Dark mode"}
+        {mounted && (theme === "dark" ? <><Sun size={14} /> Light mode</> : <><Moon size={14} /> Dark mode</>)}
       </button>
+
+      {termsOpen && <TermsModal onClose={() => setTermsOpen(false)} />}
+      {privacyOpen && <PrivacyModal onClose={() => setPrivacyOpen(false)} />}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Check, X } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import Badge from "@/components/Badge";
 import { api } from "@/lib/api";
@@ -160,7 +161,15 @@ export default function AdminFractional() {
         Flux Chain ledger <span className="dMuted">— tokenized ownership</span>
         {chain && (
           <span className={`badge ${chain.valid ? "badgeSuccess" : "badgeDanger"}`}>
-            {chain.valid ? `✓ ${chain.blockCount} blocks verified` : "✗ chain integrity failed"}
+            {chain.valid ? (
+              <>
+                <Check size={12} /> {chain.blockCount} blocks verified
+              </>
+            ) : (
+              <>
+                <X size={12} /> chain integrity failed
+              </>
+            )}
           </span>
         )}
       </div>

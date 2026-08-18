@@ -20,6 +20,8 @@ type TabKey = (typeof TABS)[number]["key"];
 interface SettingsForm {
   platformName: string;
   supportEmail: string;
+  supportPhone: string;
+  supportHours: string;
   tagline: string;
   minInvestment: string;
   sessionTimeout: string;
@@ -34,6 +36,8 @@ function buildForm(platform: PlatformSettings): SettingsForm {
   return {
     platformName: platform.platformName || "Flux",
     supportEmail: platform.supportEmail || "support@flux.app",
+    supportPhone: platform.supportPhone || "",
+    supportHours: platform.supportHours || "",
     tagline: platform.tagline || "",
     minInvestment: platform.minInvestment || "1000",
     sessionTimeout: platform.sessionTimeout || "30",
@@ -68,6 +72,8 @@ function SettingsBody({
     await savePlatform({
       platformName: form.platformName,
       supportEmail: form.supportEmail,
+      supportPhone: form.supportPhone,
+      supportHours: form.supportHours,
       tagline: form.tagline,
       minInvestment: form.minInvestment,
       sessionTimeout: form.sessionTimeout,
@@ -125,6 +131,14 @@ function SettingsBody({
           <label className="field">
             <span className="fieldLabel">Support email</span>
             <input className="input" type="email" value={form.supportEmail} onChange={set("supportEmail")} />
+          </label>
+          <label className="field">
+            <span className="fieldLabel">Support phone</span>
+            <input className="input" value={form.supportPhone} onChange={set("supportPhone")} placeholder="e.g. +1 (800) 555-0132" />
+          </label>
+          <label className="field fieldFull">
+            <span className="fieldLabel">Support hours</span>
+            <input className="input" value={form.supportHours} onChange={set("supportHours")} placeholder="e.g. Mon–Fri, 9am–6pm PKT" />
           </label>
           <label className="field fieldFull">
             <span className="fieldLabel">Tagline</span>
@@ -253,7 +267,7 @@ function SettingsBody({
           >
             <div className="dFormStack">
               <div className="dProfileAvatar">
-                <Avatar name={user?.name} size="lg" />
+                <Avatar name={user?.name} src={user?.avatar} size="lg" />
               </div>
               <label className="field">
                 <span className="fieldLabel">Name</span>

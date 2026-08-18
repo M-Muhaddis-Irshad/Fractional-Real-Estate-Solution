@@ -7,31 +7,49 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-display: "Sora", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, sans-serif;
+  /* Serif display face — dashboard headings + stat figures (ref: UI/1 INVESTOR DASHBOARD.jpg) */
+  --font-serif: var(--font-lora), Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas,
     monospace;
 
-  --bg: #f6f7f9;
+  --bg: #f5f6f8;
   --surface: #ffffff;
-  --surface-2: #f1f3f6;
-  --surface-3: #e8ebf0;
-  --border: #e3e7ee;
-  --border-strong: #ccd3dd;
+  --surface-2: #eef0f7;
+  --surface-3: #e2e5f0;
+  --border: #e3e6f0;
+  --border-strong: #ccd2e4;
 
-  --ink: #0f172a;
-  --ink-2: #334155;
-  --muted: #64748b;
-  --faint: #94a3b8;
+  --ink: #10121c;
+  --ink-2: #31364a;
+  --muted: #5c6478;
+  --faint: #949cb2;
 
-  --brand: #4f46e5;
-  --brand-2: #6366f1;
-  --brand-dark: #4338ca;
-  --brand-ink: #eef2ff;
-  --brand-soft: rgba(79, 70, 229, 0.1);
-  --brand-border: rgba(79, 70, 229, 0.28);
+  /* Brand accent retargeted to the gold family (ref: UI/1 INVESTOR DASHBOARD.jpg
+     amber CTA + stat accents). --info stays blue as a semantic info color; the
+     light/dark theme toggle switch is the only blue exception (.switchTheme). */
+  --brand: #d98e3b;
+  --brand-2: #e8a85f;
+  --brand-dark: #a96a1f;
+  --brand-ink: #fdf1e0;
+  --brand-soft: rgba(217, 142, 59, 0.1);
+  --brand-border: rgba(217, 142, 59, 0.3);
 
-  --accent: #0ea5e9;
-  --accent-2: #22d3ee;
-  --grad: linear-gradient(135deg, #6366f1, #a855f7 55%, #ec4899);
+  --accent: #f4ac2e;
+  --accent-2: #ffc95e;
+  --grad: linear-gradient(135deg, #d98e3b, #e8a85f 55%, #f4c078);
+
+  /* Dark brand sections used by the landing page (UI refs: #202b55 / #0d1f2d / #252629) */
+  --navy: #202b55;
+  --navy-deep: #0d1f2d;
+  --coal: #252629;
+
+  /* Investor-dashboard palette (ref: UI/1 INVESTOR DASHBOARD.jpg) */
+  --navy-ink: #0f1b33; /* deep navy — active sidebar pill, dark stat card, sidebar text */
+  --navy-ink-2: #17243f; /* navy hover / panel fill */
+  --gold: #d98e3b; /* amber accent — primary CTA, positive % pills, up-arrow yields */
+  --gold-2: #e8a85f;
+  --gold-soft: rgba(217, 142, 59, 0.14);
+  --gold-ink: #a96a1f; /* amber text on light backgrounds */
 
   --success: #10b981;
   --success-soft: rgba(16, 185, 129, 0.12);
@@ -50,8 +68,8 @@
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
   --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.07);
   --shadow-lg: 0 14px 40px rgba(15, 23, 42, 0.12);
-  --glow: rgba(79, 70, 229, 0.32);
-  --ring: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  --glow: rgba(217, 142, 59, 0.34);
+  --ring: 0 0 0 3px rgba(217, 142, 59, 0.2);
 
   --sidebar-w: 248px;
 }
@@ -69,8 +87,8 @@
   --muted: #8b96ab;
   --faint: #5f6b82;
 
-  --brand-soft: rgba(99, 102, 241, 0.16);
-  --brand-border: rgba(99, 102, 241, 0.4);
+  --brand-soft: rgba(232, 168, 95, 0.16);
+  --brand-border: rgba(232, 168, 95, 0.4);
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.4);
@@ -194,7 +212,7 @@ img {
   color: var(--brand);
 }
 .btnSoft:hover:not(:disabled) {
-  background: rgba(79, 70, 229, 0.18);
+  background: rgba(217, 142, 59, 0.18);
 }
 .btnDanger {
   background: var(--danger-soft);
@@ -206,6 +224,15 @@ img {
 .btnSuccess {
   background: var(--success-soft);
   color: var(--success);
+}
+.btnGold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-2));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(217, 142, 59, 0.32);
+}
+.btnGold:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(217, 142, 59, 0.4);
 }
 .btnSm {
   padding: 7px 12px;
@@ -543,6 +570,12 @@ table.dataTable tbody tr:hover {
 .switch input:checked + .switchTrack::after {
   transform: translateX(18px);
 }
+/* Theme toggle switch — explicit blue exception. Kept on the original brand
+   blue so the light/dark control stays instantly recognizable against the gold
+   feature toggles (property featured / pause switches etc.). */
+.switchTheme input:checked + .switchTrack {
+  background: #1a1fe6;
+}
 
 /* Progress bars */
 .progress {
@@ -649,6 +682,35 @@ table.dataTable tbody tr:hover {
 .modalClose:hover {
   background: var(--surface-3);
   color: var(--ink);
+}
+
+/* Terms & Conditions modal body */
+.termsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.termsBody section h4 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.termsBody section p,
+.termsBody section li {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.termsBody section ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+.termsBody a {
+  color: var(--gold-ink);
+  font-weight: 600;
 }
 
 /* Toast */

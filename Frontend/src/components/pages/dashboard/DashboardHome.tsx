@@ -2,28 +2,27 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import {
+  ArrowRight,
+  Clock,
+  Coins,
+  MapPin,
+  Percent,
+  TrendingDown,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 import { useApp } from "@/context/AppContext";
-import Stat from "@/components/Stat";
-import { AreaTrend } from "@/components/Charts";
-import Badge from "@/components/Badge";
 import EmptyState from "@/components/EmptyState";
-import { money, timeAgo } from "@/lib/format";
+import { money } from "@/lib/format";
 
 export default function DashboardHome() {
-  const {
-    user,
-    properties,
-    holdings,
-    transactions,
-    portfolioTotals,
-    portfolioSeries,
-    purchaseRequests,
-    notifications,
-    teamFee,
-  } = useApp();
+  const { user, properties, holdings, transactions, portfolioTotals, pendingRequests } = useApp();
 
+  const propertyMap = useMemo(() => Object.fromEntries(properties.map((p) => [p.id, p])), [properties]);
+
+  // Current portfolio value + total gain vs. capital invested.
   const { currentValue, totalGain, totalGainPct } = useMemo(() => {
-    const propertyMap = Object.fromEntries(properties.map((p) => [p.id, p]));
     let currentValue = 0;
     for (const h of holdings) {
       const prop = propertyMap[h.propertyId];
@@ -35,190 +34,249 @@ export default function DashboardHome() {
         ? Number(((gain / portfolioTotals.invested) * 100).toFixed(1))
         : 0;
     return { currentValue, totalGain: gain, totalGainPct: pct };
-  }, [holdings, properties, portfolioTotals]);
+  }, [holdings, propertyMap, portfolioTotals]);
 
-  const pending = purchaseRequests.filter((r) => r.status === "pending");
-  const recentTx = transactions.slice(0, 5);
-  const firstTx = transactions.length
-    ? [...transactions].sort(
-        (a, b) =>
-          new Date(a.createdAt || a.date || 0).getTime() - new Date(b.createdAt || b.date || 0).getTime()
-      )[0]
-    : null;
+  // Weighted average of the annual yield of the properties actually held
+  // (weighted by capital invested in each).
+  const avgYield = useMemo(() => {
+    let sum = 0;
+    let weight = 0;
+    for (const h of holdings) {
+      const prop = propertyMap[h.propertyId];
+      if (prop) {
+        sum += prop.yieldPct * h.invested;
+        weight += h.invested;
+      }
+    }
+    return weight > 0 ? sum / weight : 0;
+  }, [holdings, propertyMap]);
+
+  // "Recent Activity" has no dedicated per-user feed endpoint yet (only the
+  // admin activity log exists), so we surface the user's latest transactions —
+  // the closest real source with dates, titles and amounts.
+  const recentActivity = useMemo(() => transactions.slice(0, 5), [transactions]);
+
+  const firstName = user?.name?.split(" ")[0] || "Investor";
 
   return (
-    <div className="riseIn">
-      <div className="pageHead">
+    <div className="riseIn dashPage">
+      {/* Page heading — large serif title + gray subtitle */}
+      <div className="dashHead">
         <div>
-          <div className="pageEyebrow">Welcome back</div>
-          <h1 className="pageTitle">Good to see you, {user?.name?.split(" ")[0] || "Investor"} 👋</h1>
-          <p className="pageSub">
-            {transactions.length
-              ? `Your portfolio has grown since your first investment${firstTx ? ` on ${firstTx.date}` : ""}.`
-              : "Explore assets and build your fractional real-estate portfolio."}
+          <h1 className="dashTitle">Investor Dashboard</h1>
+          <p className="dashSub">
+            Welcome back, {firstName}. Here&apos;s an overview of your portfolio.
           </p>
         </div>
-        <Link href="/discover" className="btn btnPrimary">
-          + Explore assets
-        </Link>
       </div>
 
-      <div className="kpiGrid">
-        <Stat
-          label="Portfolio value"
-          value={money(currentValue)}
-          delta={`${totalGainPct >= 0 ? "▲" : "▼"} ${Math.abs(totalGainPct)}%`}
-          tone={totalGainPct >= 0 ? "up" : "down"}
-        />
-        <Stat label="Total invested" value={money(portfolioTotals.invested)} />
-        <Stat
-          label="Total return"
-          value={`${totalGain >= 0 ? "+" : ""}${money(totalGain)}`}
-          tone={totalGain >= 0 ? "up" : "down"}
-        />
-        <Stat label="Properties held" value={portfolioTotals.count} />
-      </div>
-
-      <div className="grid-2-1">
-        <div className="card cardPad">
-          <div className="dChartHead">
-            <div>
-              <div className="cardTitle">Portfolio growth</div>
-              <div className="cardSub">Cumulative invested capital over time</div>
-            </div>
-            {teamFee != null && <Badge status="active" label={`Team fee ${teamFee}%`} />}
+      {/* 3-column stat row — two light cards + one deep-navy emphasis card */}
+      <div className="dashStats">
+        <div className="dashStat">
+          <div className="dashStatHead">
+            <span className="dashStatLabel">Portfolio value</span>
+            <span className="dashStatIcon" aria-hidden="true">
+              <Wallet size={16} />
+            </span>
           </div>
-          {portfolioSeries.length >= 2 ? (
-            <AreaTrend data={portfolioSeries} dataKey="invested" height={260} />
-          ) : (
-            <div className="dChartEmpty">Start investing to see your growth curve here.</div>
-          )}
+          <div className="dashStatValue">{money(currentValue)}</div>
+          <div className="dashStatSub">Total invested {money(portfolioTotals.invested)}</div>
         </div>
 
-        <div className="dStack">
-          <div className="card">
-            <div className="cardHead">
-              <div className="cardTitle">Pending approvals</div>
-              <Link href="/ledger" className="dLink">
-                View all →
-              </Link>
+        <div className="dashStat dashStatDark">
+          <div className="dashStatHead">
+            <span className="dashStatLabel">Total returns</span>
+            <span className="dashStatIcon" aria-hidden="true">
+              <TrendingUp size={16} />
+            </span>
+          </div>
+          <div className="dashStatValue">
+            {totalGain >= 0 ? "+" : ""}
+            {money(totalGain)}
+          </div>
+          <div className="dashStatTrend">
+            <span className={"dashPill" + (totalGainPct >= 0 ? " dashPillUp" : " dashPillDown")}>
+              {totalGainPct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}{" "}
+              {Math.abs(totalGainPct)}%
+            </span>
+            <span className="dashStatSub">since your first investment</span>
+          </div>
+        </div>
+
+        <div className="dashStat">
+          <div className="dashStatHead">
+            <span className="dashStatLabel">Avg. yield</span>
+            <span className="dashStatIcon" aria-hidden="true">
+              <Percent size={16} />
+            </span>
+          </div>
+          <div className="dashStatValue">{avgYield.toFixed(1)}%</div>
+          <div className="dashStatSub">
+            Across {portfolioTotals.count} propert{portfolioTotals.count === 1 ? "y" : "ies"}
+          </div>
+        </div>
+      </div>
+
+      {/* Main column (owned property shares) + right column (pending + activity) */}
+      <div className="dashColumns">
+        <section className="dashMainCol">
+          <div className="dashSectionHead">
+            <h2 className="dashSectionTitle">Owned Property Shares</h2>
+            <Link href="/ledger" className="dashViewAll">
+              View All <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          {holdings.length === 0 ? (
+            <div className="card">
+              <EmptyState
+                icon={<Wallet size={22} />}
+                title="Your portfolio is empty"
+                sub="Submit a purchase request from the marketplace and start earning."
+              >
+                <Link href="/discover" className="btn btnGold">
+                  Explore assets
+                </Link>
+              </EmptyState>
             </div>
-            {pending.length === 0 ? (
-              <div className="dCardBodyEmpty">All investments settle instantly — nothing waits for approval.</div>
-            ) : (
-              <div className="dMiniList">
-                {pending.slice(0, 4).map((r) => (
-                  <div className="dMiniRow" key={r.id}>
-                    <div>
-                      <div className="dMiniName">{r.propertyName}</div>
-                      <div className="dMiniMeta">
-                        {r.shares} shares · {r.date}
+          ) : (
+            <div className="dashProps">
+              {holdings.map((h) => {
+                const prop = propertyMap[h.propertyId];
+                const shareValue = prop ? h.shares * prop.pricePerShare : h.invested;
+                const pctFunded = prop && prop.totalShares > 0
+                  ? Math.round((prop.soldShares / prop.totalShares) * 100)
+                  : 0;
+                const thumbStyle = prop?.imageUrl
+                  ? { backgroundImage: `url(${prop.imageUrl})` }
+                  : {
+                      background: `linear-gradient(135deg, hsl(${prop?.hue ?? 220} 45% 30%), hsl(${((prop?.hue ?? 220) + 50) % 360} 45% 18%))`,
+                    };
+                return (
+                  <div className="dashProp" key={h.propertyId}>
+                    <Link
+                      href={`/property/${h.propertyId}`}
+                      className="dashPropMedia"
+                      style={thumbStyle}
+                      role="img"
+                      aria-label={prop ? `${prop.name} in ${prop.city}` : h.name}
+                    >
+                      {!prop?.imageUrl && <span className="dashPropMediaFallback">{prop?.initials}</span>}
+                      <span className="dashPropShade" aria-hidden="true" />
+                      <span className="dashPropOverlay">
+                        <span className="dashPropName">{h.name}</span>
+                        <span className="dashPropLoc">
+                        <MapPin size={11} /> {prop?.city ?? ""}
+                      </span>
+                      </span>
+                    </Link>
+                    <div className="dashPropBody">
+                      <div className="dashPropStats">
+                        <div>
+                          <div className="dashPropStatLabel">Share value</div>
+                          <div className="dashPropStatVal">{money(shareValue)}</div>
+                        </div>
+                        <div>
+                          <div className="dashPropStatLabel">Equity</div>
+                          <div className="dashPropStatVal">{money(h.invested)}</div>
+                        </div>
+                      </div>
+                      <div
+                        className="dashPropBar"
+                        role="progressbar"
+                        aria-valuenow={pctFunded}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Asset funding progress"
+                      >
+                        <div className="dashPropBarFill" style={{ width: `${pctFunded}%` }} />
+                      </div>
+                      <div className="dashPropFoot">
+                        <span className="dashPropYield">
+                          <TrendingUp size={12} /> {prop?.yieldPct ?? 0}% APY
+                        </span>
+                        <Link href={`/property/${h.propertyId}`} className="dashPropDetails">
+                          Details <ArrowRight size={12} />
+                        </Link>
                       </div>
                     </div>
-                    <div className="dMiniRight">
-                      <div className="dMiniAmount">{money(r.totalCost)}</div>
-                      <Badge status="pending" />
-                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
-          <div className="card">
-            <div className="cardHead">
-              <div className="cardTitle">Recent announcements</div>
-              <Link href="/notifications" className="dLink">
-                View all →
+        <aside className="dashSideCol">
+          {/* Pending requests */}
+          <div className="dashCard">
+            <div className="dashCardHead">
+              <h3 className="dashCardTitle">Pending Requests</h3>
+              <Link href="/ledger" className="dashViewAll">
+                View all
               </Link>
             </div>
-            {notifications.length === 0 ? (
-              <div className="dCardBodyEmpty">No announcements yet.</div>
+            {pendingRequests.length === 0 ? (
+              <div className="dashCardEmpty">All investments settle instantly — nothing awaits approval.</div>
             ) : (
-              <div className="dMiniList">
-                {notifications.slice(0, 3).map((n) => (
-                  <div className="dMiniRow" key={n.id}>
-                    <div>
-                      <div className="dMiniName">{n.title}</div>
-                      <div className="dMiniMeta">{timeAgo(n.createdAt)}</div>
+              <div className="dashReqList">
+                {pendingRequests.slice(0, 4).map((r) => (
+                  <div className="dashReq" key={r.id}>
+                    <span className="dashReqIcon" aria-hidden="true">
+                      <Clock size={15} />
+                    </span>
+                    <div className="dashReqBody">
+                      <div className="dashReqTitle">{r.propertyName}</div>
+                      <div className="dashReqMeta">
+                        {r.shares} shares · {money(r.totalCost)}
+                      </div>
+                      {/* No per-request step/timeline field exists in the data model;
+                          the bar reflects the real status: submitted = 1 of 2 steps. */}
+                      <div className="dashReqBar">
+                        <div className="dashReqBarFill" style={{ width: "35%" }} />
+                      </div>
+                      <div className="dashReqStep">Step 1 of 2 · Awaiting team review</div>
                     </div>
-                    {!n.read && <span className="dUnreadDot" title="Unread" />}
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      <div className="sectionHeading">Recent transactions</div>
-      <div className="tableWrap">
-        <div className="tableScroll">
-          <table className="dataTable">
-            <thead>
-              <tr>
-                <th>Property</th>
-                <th>Date</th>
-                <th>Shares</th>
-                <th>Price / share</th>
-                <th>Total</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentTx.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="tableEmpty">
-                    No transactions yet — <Link href="/discover">discover assets</Link> to get started.
-                  </td>
-                </tr>
-              )}
-              {recentTx.map((t) => (
-                <tr key={t.id}>
-                  <td>
-                    <Link href={`/property/${t.propertyId}`} className="dTableLink">
-                      {t.name}
-                    </Link>
-                  </td>
-                  <td className="dMuted">{t.date}</td>
-                  <td>{t.shares}</td>
-                  <td className="dMuted">{money(t.pricePerShare)}</td>
-                  <td className="dStrong">{money(t.total)}</td>
-                  <td>
-                    <Badge status="approved" label="Completed" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="sectionHeading">Quick actions</div>
-      <div className="grid3">
-        {[
-          { icon: "◎", title: "Browse marketplace", sub: "Discover vetted properties and request shares.", to: "/discover" },
-          { icon: "▤", title: "Review your ledger", sub: "Track holdings, requests and receipts.", to: "/ledger" },
-          { icon: "●", title: "Manage profile", sub: "Update your details, password and preferences.", to: "/profile" },
-        ].map((a) => (
-          <Link href={a.to} className="dQuick" key={a.to}>
-            <span className="dQuickIcon">{a.icon}</span>
-            <div>
-              <div className="dQuickTitle">{a.title}</div>
-              <div className="dQuickSub">{a.sub}</div>
+          {/* Recent activity */}
+          <div className="dashCard">
+            <div className="dashCardHead">
+              <h3 className="dashCardTitle">Recent Activity</h3>
+              <Link href="/ledger" className="dashViewAll">
+                View all
+              </Link>
             </div>
-            <span className="dQuickArrow">→</span>
-          </Link>
-        ))}
+            {recentActivity.length === 0 ? (
+              <div className="dashCardEmpty">No activity yet — explore assets to get started.</div>
+            ) : (
+              <div className="dashActList">
+                {recentActivity.map((t) => (
+                  <div className="dashAct" key={t.id}>
+                    <span className="dashActIcon" aria-hidden="true">
+                      <Coins size={15} />
+                    </span>
+                    <div className="dashActBody">
+                      <div className="dashActTop">
+                        <span className="dashActTitle">{t.name}</span>
+                        <span className="dashActDate">{t.date}</span>
+                      </div>
+                      <div className="dashActSub">
+                        {t.shares} shares @ {money(t.pricePerShare)}/share
+                      </div>
+                      <div className="dashActAmt">+{money(t.total)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </aside>
       </div>
-
-      {holdings.length === 0 && (
-        <EmptyState
-          icon="◈"
-          title="Your portfolio is empty"
-          sub="Submit a purchase request from the marketplace and start earning."
-        />
-      )}
     </div>
   );
 }

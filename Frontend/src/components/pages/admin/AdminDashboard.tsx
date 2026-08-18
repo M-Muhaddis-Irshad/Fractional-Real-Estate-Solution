@@ -2,6 +2,17 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  Building2,
+  FileText,
+  LayoutDashboard,
+  Megaphone,
+  PieChart,
+  Plus,
+  Users,
+} from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { useApp } from "@/context/AppContext";
 import { AreaTrend, Donut } from "@/components/Charts";
@@ -89,7 +100,7 @@ export default function AdminDashboard() {
         </div>
         <div className="aHeadActions">
           <Link href="/admin/properties/new" className="btn btnPrimary">
-            + List property
+            <Plus size={15} /> List property
           </Link>
           <Link href="/admin/investments" className="btn btnGhost">
             Review requests
@@ -102,7 +113,7 @@ export default function AdminDashboard() {
         <Kpi label="Total admins" value={s.totalAdmins ?? "—"} sub={`${s.activeProperties ?? 0} active listings`} />
         <Kpi label="Properties" value={s.totalProperties ?? "—"} sub={`${s.fractionalProperties ?? 0} fractional offerings`} />
         <Kpi label="Total investments" value={s.totalInvestments ?? "—"} sub={`${s.pendingRequests ?? 0} awaiting approval`} />
-        <Kpi label="Total invested" value={money(s.totalInvested || 0)} sub="All-time capital deployed" accent="#6366f1" />
+        <Kpi label="Total invested" value={money(s.totalInvested || 0)} sub="All-time capital deployed" accent="#d98e3b" />
         <Kpi label="Total revenue" value={money(s.totalRevenue || 0)} sub={`incl. ${moneyShort(s.teamEarnings || 0)} fees`} accent="#10b981" />
         <Kpi label="Active listings" value={s.activeProperties ?? "—"} sub={`${s.pendingProperties ?? 0} pending review`} />
         <Kpi label="Pending approvals" value={s.pendingRequests ?? "—"} sub={`${s.approvedRequests ?? 0} approved to date`} accent="#f59e0b" />
@@ -144,11 +155,11 @@ export default function AdminDashboard() {
           <div className="aActivityList">
             {activity.slice(0, 8).map((a) => (
               <div className="aActivityRow" key={a.id}>
-                <Avatar name={a.actor?.name || a.user?.name || "Flux"} size="sm" />
+                <Avatar name={a.actor?.name || a.user?.name || "System"} size="sm" />
                 <div className="aActivityBody">
                   <div className="aActivityMsg">{a.message}</div>
                   <div className="aActivityMeta">
-                    {a.actor ? `${a.actor.name} · ` : ""}
+                    {(a.actor?.name || a.user?.name || "System") + " · "}
                     {timeAgo(a.createdAt)}
                   </div>
                 </div>
@@ -166,7 +177,7 @@ export default function AdminDashboard() {
               <div className="cardSub">Purchase requests awaiting review</div>
             </div>
             <Link href="/admin/investments" className="dLink">
-              All →
+              All <ArrowRight size={12} />
             </Link>
           </div>
           {pendingRequests.length === 0 ? (
@@ -202,20 +213,24 @@ export default function AdminDashboard() {
       <div className="sectionHeading">Quick links</div>
       <div className="grid3">
         {[
-          { icon: "▤", title: "Property management", sub: "Approve listings, edit assets, manage status.", to: "/admin/properties" },
-          { icon: "◇", title: "Fractional offerings", sub: "Configure shares, pricing and pause/resume.", to: "/admin/fractional" },
-          { icon: "◎", title: "User management", sub: "Review, suspend and promote accounts.", to: "/admin/users" },
-          { icon: "▦", title: "Financial dashboard", sub: "Revenue analytics and commission tracking.", to: "/admin/financials" },
-          { icon: "☰", title: "Content management", sub: "Edit homepage hero, FAQ, testimonials and blog.", to: "/admin/content" },
-          { icon: "◆", title: "Announcements", sub: "Compose and send platform notifications.", to: "/admin/notifications" },
+          { icon: Building2, title: "Property management", sub: "Approve listings, edit assets, manage status.", to: "/admin/properties" },
+          { icon: PieChart, title: "Fractional offerings", sub: "Configure shares, pricing and pause/resume.", to: "/admin/fractional" },
+          { icon: Users, title: "User management", sub: "Review, suspend and promote accounts.", to: "/admin/users" },
+          { icon: BarChart3, title: "Financial dashboard", sub: "Revenue analytics and commission tracking.", to: "/admin/financials" },
+          { icon: FileText, title: "Content management", sub: "Edit homepage hero, FAQ, testimonials and blog.", to: "/admin/content" },
+          { icon: Megaphone, title: "Announcements", sub: "Compose and send platform notifications.", to: "/admin/notifications" },
         ].map((q) => (
           <Link href={q.to} className="dQuick" key={q.to}>
-            <span className="dQuickIcon">{q.icon}</span>
+            <span className="dQuickIcon">
+              <q.icon size={17} />
+            </span>
             <div>
               <div className="dQuickTitle">{q.title}</div>
               <div className="dQuickSub">{q.sub}</div>
             </div>
-            <span className="dQuickArrow">→</span>
+            <span className="dQuickArrow">
+              <ArrowRight size={14} />
+            </span>
           </Link>
         ))}
       </div>

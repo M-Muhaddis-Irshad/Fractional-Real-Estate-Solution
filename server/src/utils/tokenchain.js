@@ -3,10 +3,11 @@ import Token from "../models/Token.js";
 
 // Leading zeros required in every block hash. Tune via FLUX_CHAIN_DIFFICULTY
 // (default 4 → ~1/65k chance per attempt, mints in tens of milliseconds).
-const DIFFICULTY = Math.min(
-  Math.max(parseInt(process.env.FLUX_CHAIN_DIFFICULTY || "4", 10), 1),
-  6
-);
+// Lazy read — dotenv.config() runs in src/index.js AFTER the import graph is
+// evaluated, so a module-scope read would capture undefined and ignore the env
+// var (same bug class as the Google strategy and RESET_URL fixes).
+const getDifficulty = () =>
+  Math.min(Math.max(parseInt(process.env.FLUX_CHAIN_DIFFICULTY || "4", 10), 1), 6);
 
 export const sha256 = (input) =>
   crypto.createHash("sha256").update(String(input)).digest("hex");
@@ -21,7 +22,7 @@ export function computeBlockHash(blockNumber, timestamp, data, previousHash, non
 }
 
 function mine(blockNumber, timestamp, data, previousHash) {
-  const target = "0".repeat(DIFFICULTY);
+  const target = "0".repeat(getDifficulty());
   let nonce = 0;
   let hash = "";
   do {
@@ -195,7 +196,7 @@ export async function verifyChain() {
     blockCount: blocks.length,
     tokenCount: blocks.filter((b) => b.kind === "mint").length,
     firstBad,
-    difficulty: DIFFICULTY,
+    difficulty: getDifficulty(),
     checkedAt: new Date().toISOString(),
   };
 }

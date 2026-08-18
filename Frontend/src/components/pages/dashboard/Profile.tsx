@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { Activity, LayoutDashboard, TrendingDown, TrendingUp } from "lucide-react";
+import { api, API_BASE, getToken } from "@/lib/api";
 import { useApp } from "@/context/AppContext";
 import Stat from "@/components/Stat";
 import Avatar from "@/components/Avatar";
@@ -29,7 +30,7 @@ function HoldingsCard({
   if (holdingsWithDetail.length === 0) {
     return (
       <div className="card">
-        <EmptyState icon="◈" title="No holdings yet" sub="Start investing to see your portfolio performance here.">
+        <EmptyState icon={<LayoutDashboard size={22} />} title="No holdings yet" sub="Start investing to see your portfolio performance here.">
           <Link href="/discover" className="btn btnPrimary">
             Discover properties
           </Link>
@@ -63,7 +64,8 @@ function HoldingsCard({
                 <td className="dStrong">{money(h.currentValue)}</td>
                 <td>
                   <span className={`dReturn ${h.changePct >= 0 ? "dReturnUp" : "dReturnDown"}`}>
-                    {h.changePct >= 0 ? "▲" : "▼"} {Math.abs(h.changePct)}%
+                    {h.changePct >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}{" "}
+                    {Math.abs(h.changePct)}%
                   </span>
                 </td>
               </tr>
@@ -119,7 +121,7 @@ function AllocationCard({
 }
 
 function AccountSettings({ user }: { user: User | null }) {
-  const { notify } = useApp();
+  const { notify, refreshUser } = useApp();
   const [profile, setProfile] = useState({ name: user?.name || "", email: user?.email || "" });
   const [pw, setPw] = useState({ currentPassword: "", newPassword: "" });
   const [busy, setBusy] = useState<"profile" | "pw" | null>(null);
@@ -132,6 +134,8 @@ function AccountSettings({ user }: { user: User | null }) {
     try {
       const { user: updated } = await api<{ user: User }>("/users/me", { method: "PUT", body: profile });
       setProfile({ name: updated.name, email: updated.email });
+      // Refresh context so the name/avatar everywhere (sidebar, topbar) updates.
+      await refreshUser();
       setMsg({ tone: "success", text: "Profile updated." });
       notify("Profile updated.", "success");
     } catch (err) {
@@ -223,7 +227,57 @@ function AccountSettings({ user }: { user: User | null }) {
 }
 
 export default function Profile() {
-  const { user, properties, holdings, portfolioTotals, logout } = useApp();
+  const { user, properties, holdings, portfolioTotals, logout, refreshUser } = useApp();
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarMsg, setAvatarMsg] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+
+  const uploadAvatar = async (file: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setAvatarMsg({ tone: "error", text: "Please choose an image file (JPG, PNG, WebP or GIF)." });
+      return;
+    }
+    setAvatarBusy(true);
+    setAvatarMsg(null);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch(`${API_BASE}/api/users/me/avatar`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken() || ""}` },
+        body: fd,
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(
+          (data && typeof data === "object" && "error" in data ? String((data as { error: unknown }).error) : null) ||
+            `Upload failed (${res.status}).`
+        );
+      }
+      await refreshUser();
+      setAvatarMsg({ tone: "success", text: "Profile photo updated." });
+    } catch (err) {
+      setAvatarMsg({ tone: "error", text: (err as Error).message });
+    } finally {
+      setAvatarBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const removeAvatar = async () => {
+    setAvatarBusy(true);
+    setAvatarMsg(null);
+    try {
+      await api<{ user: User }>("/users/me", { method: "PUT", body: { avatar: null } });
+      await refreshUser();
+      setAvatarMsg({ tone: "success", text: "Profile photo removed." });
+    } catch (err) {
+      setAvatarMsg({ tone: "error", text: (err as Error).message });
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
 
   const propertyMap = useMemo(
     () => Object.fromEntries(properties.map((p) => [p.id, p])),
@@ -328,7 +382,19 @@ export default function Profile() {
                     <span
                       className={`dReturn ${p.demand >= 50 ? "dReturnUp" : p.demand >= 25 ? "" : "dReturnDown"}`}
                     >
-                      {p.demand >= 50 ? "▲ Hot" : p.demand >= 25 ? "◆ Stable" : "▼ Cold"}
+                      {p.demand >= 50 ? (
+                        <>
+                          <TrendingUp size={12} /> Hot
+                        </>
+                      ) : p.demand >= 25 ? (
+                        <>
+                          <Activity size={12} /> Stable
+                        </>
+                      ) : (
+                        <>
+                          <TrendingDown size={12} /> Cold
+                        </>
+                      )}
                     </span>
                   </td>
                   <td className="dMuted">
@@ -344,7 +410,33 @@ export default function Profile() {
       <div className="sectionHeading">Account settings</div>
       <div className="dProfileCard">
         <div className="dProfileAvatar">
-          <Avatar name={user?.name} size="lg" />
+          <Avatar name={user?.name} src={user?.avatar} size="lg" />
+          <div className="dAvatarActions">
+            <button
+              className="btn btnSoft btnSm"
+              onClick={() => fileRef.current?.click()}
+              disabled={avatarBusy}
+            >
+              {user?.avatar ? "Replace photo" : "Add photo"}
+            </button>
+            {user?.avatar && (
+              <button className="btn btnGhost btnSm" onClick={removeAvatar} disabled={avatarBusy}>
+                Remove
+              </button>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              hidden
+              onChange={(e) => uploadAvatar(e.target.files?.[0] || null)}
+            />
+            {avatarMsg && (
+              <div className={avatarMsg.tone === "success" ? "successText" : "errorText"}>
+                {avatarMsg.text}
+              </div>
+            )}
+          </div>
         </div>
         <AccountSettings user={user} />
       </div>

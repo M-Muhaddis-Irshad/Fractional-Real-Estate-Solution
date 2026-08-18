@@ -15,6 +15,7 @@ import { connectSocket, disconnectSocket, getSocket } from "@/lib/socket";
 import type {
   AppNotification,
   Holding,
+  PlatformSettings,
   PortfolioPoint,
   PortfolioTotals,
   Property,
@@ -62,6 +63,29 @@ export interface ToastState {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+/**
+ * Google OAuth delivers its JWT in the URL fragment (#token=...) so it never
+ * touches the frontend server logs or the Referer header. We capture it here,
+ * in the auth bootstrap, so the token is persisted BEFORE any auth guard can
+ * run — regardless of which route OAuth lands on — then clean the hash off the
+ * address bar.
+ */
+function captureHashToken(): string | null {
+  try {
+    const hash = window.location.hash;
+    if (!hash) return null;
+    const params = new URLSearchParams(hash.replace(/^#/, ""));
+    const token = params.get("token");
+    if (token) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      return token;
+    }
+  } catch {
+    /* non-critical */
+  }
+  return null;
+}
+
 function normalizeTransaction(t: Transaction): Transaction {
   return {
     ...t,
@@ -78,6 +102,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [properties, setProperties] = useState<Property[]>([]);
   const [content, setContent] = useState<SiteContent | null>(null);
+  const [platform, setPlatform] = useState<PlatformSettings>({});
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>([]);
   const [tokens, setTokens] = useState<Token[]>([]);
@@ -114,6 +139,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let active = true;
     (async () => {
       try {
+        // Persist an OAuth fragment token (if present) BEFORE checking the
+        // stored token, so a Google sign-in survives any route change / reload
+        // and the auth guard never sees a "logged out" session mid-flow.
+        const hashToken = captureHashToken();
+        if (hashToken) setToken(hashToken);
+
         if (getToken()) {
           const { user: authed } = await api<{ user: User }>("/auth/me");
           if (active) setUser(authed);
@@ -127,6 +158,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
+  }, []);
+
+  /** Re-fetch the current user from the API and update context (used after
+      avatar/profile changes so every avatar in the UI refreshes). */
+  const refreshUser = useCallback(async () => {
+    try {
+      const { user: fresh } = await api<{ user: User }>("/auth/me");
+      setUser(fresh);
+    } catch {
+      /* keep the current user on failure */
+    }
   }, []);
 
   /* ---------------- Data loading ---------------- */
@@ -153,12 +195,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const [propsRes, settingsRes, contentRes] = await Promise.all([
           api<{ properties?: Property[] }>("/properties", { auth: false }),
-          api<{ settings?: { teamFee?: number } }>("/settings", { auth: false }),
+          api<{ settings?: { teamFee?: number; platform?: PlatformSettings } }>("/settings", { auth: false }),
           api<{ content: SiteContent }>("/settings/content", { auth: false }),
         ]);
         if (!active) return;
         setProperties(propsRes.properties || []);
         setTeamFeeState(settingsRes.settings?.teamFee ?? 2.25);
+        setPlatform(settingsRes.settings?.platform || {});
         setContent(contentRes.content);
 
         if (user) await loadUserData(user);
@@ -453,6 +496,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isAdmin: !!user && user.role === "superadmin",
     properties,
     content,
+    platform,
     transactions,
     holdings,
     portfolioTotals,
@@ -474,6 +518,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     markNotificationRead,
     onboardingOpen,
     dismissOnboarding,
+    refreshUser,
     theme,
     toggleTheme,
     toast,
@@ -491,6 +536,7 @@ export interface AppContextValue {
   isAdmin: boolean;
   properties: Property[];
   content: SiteContent | null;
+  platform: PlatformSettings;
   transactions: Transaction[];
   holdings: Holding[];
   portfolioTotals: PortfolioTotals;
@@ -525,6 +571,7 @@ export interface AppContextValue {
   markNotificationRead: (id: string) => Promise<void>;
   onboardingOpen: boolean;
   dismissOnboarding: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   theme: string;
   toggleTheme: () => void;
   toast: ToastState | null;

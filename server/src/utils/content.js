@@ -10,9 +10,14 @@ export const DEFAULT_CONTENT = {
   },
   stats: [
     { label: "Properties Listed", value: "12" },
-    { label: "Total Value", value: "$480M" },
+    { label: "Total Value", value: "Rs 480M" },
     { label: "Avg. Yield", value: "8.6%" },
     { label: "Active Investors", value: "24K" },
+  ],
+  trustChips: [
+    { label: "SEC REGISTERED", icon: "ShieldCheck" },
+    { label: "Rs 250M INSURANCE", icon: "Shield" },
+    { label: "AES-256 ENCRYPTED", icon: "Lock" },
   ],
   features: [
     { title: "Institutional vetting", text: "Every asset is underwritten and verified by our expert real-estate team before it ever reaches the marketplace." },

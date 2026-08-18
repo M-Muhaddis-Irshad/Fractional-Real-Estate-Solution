@@ -56,7 +56,7 @@ export default function AdminFinancials() {
       </div>
 
       <div className="kpiGrid">
-        <div className="kpi" style={{ borderTop: "3px solid #6366f1" }}>
+        <div className="kpi" style={{ borderTop: "3px solid #d98e3b" }}>
           <div className="kpiLabel">Total invested</div>
           <div className="kpiValue">{money(totals.totalInvested)}</div>
           <div className="kpiSub">All-time capital deployed</div>

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ArrowLeft, Check, Moon, Sun } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { api } from "@/lib/api";
+import AuthSideStats from "@/components/AuthSideStats";
 
 export default function ResetPassword({ token }: { token?: string }) {
   const { theme, toggleTheme } = useApp();
@@ -12,6 +14,11 @@ export default function ResetPassword({ token }: { token?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,12 +50,42 @@ export default function ResetPassword({ token }: { token?: string }) {
 
   return (
     <div className="authPage">
-      <div className="authBg" aria-hidden="true" />
-      <div className="authCard">
-        <div className="authBrand">
-          <img src="/logo/logo.png" alt="Flux" className="authLogo" />
-          <span>Flux</span>
+      {/* Left brand panel (split-screen, ref: UI/Auth/ref 1) */}
+      <aside className="authSide">
+        <div className="authSideInner">
+          <div className="authSideBrand">
+            <img src="/logo/logo.webp" alt="Flux" className="authSideLogo" />
+            <span>Flux</span>
+          </div>
+          <div className="authSideBody">
+            <div className="authSideKicker">
+              <span className="authDot" /> Secure password reset
+            </div>
+            <h1 className="authSideTitle">
+              Own a fraction.
+              <br />
+              <em>Earn the whole return.</em>
+            </h1>
+            <p className="authSideSub">
+              Access institutional-grade real estate through fractional ownership — secure,
+              transparent, and built for the next generation of global investors.
+            </p>
+            <ul className="authSidePoints">
+              <li>Assets vetted and underwritten by our real-estate team</li>
+              <li>Rental income distributed automatically, every month</li>
+              <li>Ownership recorded immutably, fully transparent</li>
+            </ul>
+          </div>
+          <AuthSideStats />
         </div>
+      </aside>
+
+      <main className="authMain">
+        <div className="authCard">
+          <div className="authBrand">
+            <img src="/logo/logo.webp" alt="Flux" className="authLogo" />
+            <span>Flux</span>
+          </div>
 
         {!token ? (
           <>
@@ -59,18 +96,24 @@ export default function ResetPassword({ token }: { token?: string }) {
               This link is missing its security token. It may be copied incorrectly or truncated.
             </p>
             <div className="authBack">
-              <Link href="/forgot-password">← Request a new reset link</Link>
+              <Link href="/forgot-password">
+                <ArrowLeft size={13} /> Request a new reset link
+              </Link>
             </div>
           </>
         ) : done ? (
           <>
-            <div className="pdReceiptIcon">✓</div>
+            <div className="pdReceiptIcon">
+              <Check size={20} />
+            </div>
             <div className="pdReceiptTitle">Password updated</div>
             <p className="pdReceiptSub" style={{ textAlign: "center" }}>
               Your password has been changed. You can now sign in with your new password.
             </p>
             <div className="authBack">
-              <Link href="/login">← Back to sign in</Link>
+              <Link href="/login">
+                <ArrowLeft size={13} /> Back to sign in
+              </Link>
             </div>
           </>
         ) : (
@@ -118,20 +161,23 @@ export default function ResetPassword({ token }: { token?: string }) {
 
               {error && <div className="errorText">{error}</div>}
 
-              <button className="btn btnPrimary btnBlock btnLg" type="submit" disabled={submitting}>
+              <button className="btn btnGold btnBlock btnLg" type="submit" disabled={submitting}>
                 {submitting ? "Updating…" : "Update password"}
               </button>
             </form>
 
             <div className="authBack">
-              <Link href="/login">← Back to sign in</Link>
+              <Link href="/login">
+                <ArrowLeft size={13} /> Back to sign in
+              </Link>
             </div>
           </>
         )}
-      </div>
+        </div>
+      </main>
 
       <button className="authThemeBtn" onClick={toggleTheme}>
-        {theme === "dark" ? "☀ Light mode" : "☾ Dark mode"}
+        {mounted && (theme === "dark" ? <><Sun size={14} /> Light mode</> : <><Moon size={14} /> Dark mode</>)}
       </button>
     </div>
   );

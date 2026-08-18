@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 /**
@@ -62,8 +63,6 @@ const SLIDES = [
   },
 ];
 
-const ARROW_LEFT = "←";
-const ARROW_RIGHT = "→";
 
 export default function OnboardingModal() {
   const { dismissOnboarding } = useApp();
@@ -135,7 +134,7 @@ export default function OnboardingModal() {
         onTouchEnd={onTouchEnd}
       >
         <button className="onbClose" onClick={close} aria-label="Close welcome">
-          ✕
+          <X size={15} />
         </button>
 
         <div className="onbViewport">
@@ -207,17 +206,17 @@ export default function OnboardingModal() {
                 onClick={() => goTo(index - 1)}
                 aria-label="Previous slide"
               >
-                {ARROW_LEFT}
+                <ChevronLeft size={16} />
               </button>
             )}
 
             {last ? (
               <button className="btn btnPrimary onbNext" onClick={finish} autoFocus>
-                Get Started →
+                Get Started <ArrowRight size={15} />
               </button>
             ) : (
               <button className="btn btnSoft onbNext" onClick={next}>
-                NEXT {ARROW_RIGHT}
+                NEXT <ChevronRight size={15} />
               </button>
             )}
           </div>

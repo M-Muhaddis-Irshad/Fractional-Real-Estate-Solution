@@ -306,7 +306,7 @@
   width: 40px;
   height: 40px;
   border-radius: 11px;
-  background: linear-gradient(135deg, var(--brand-soft), rgba(168, 85, 247, 0.14));
+  background: linear-gradient(135deg, var(--brand-soft), rgba(244, 172, 46, 0.14));
   color: var(--brand);
   font-size: 17px;
   flex-shrink: 0;
@@ -396,7 +396,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 11px;
-  background: linear-gradient(135deg, var(--brand-soft), rgba(168, 85, 247, 0.12));
+  background: linear-gradient(135deg, var(--brand-soft), rgba(244, 172, 46, 0.12));
   color: var(--brand);
   font-size: 18px;
 }
@@ -511,13 +511,13 @@
 }
 .osCtaInner {
   background:
-    radial-gradient(700px 300px at 85% -20%, rgba(168, 85, 247, 0.28), transparent 60%),
-    linear-gradient(135deg, var(--brand), #7c3aed);
+    radial-gradient(700px 300px at 85% -20%, rgba(255, 255, 255, 0.3), transparent 60%),
+    linear-gradient(135deg, #f6b440, #f4ac2e 55%, #e8941f);
   border-radius: 26px;
   padding: 58px 32px;
   text-align: center;
-  color: #fff;
-  box-shadow: 0 24px 60px var(--glow);
+  color: #241c10;
+  box-shadow: 0 24px 60px rgba(244, 172, 46, 0.35);
 }
 .osCtaTitle {
   font-size: clamp(26px, 3.4vw, 38px);
@@ -538,12 +538,13 @@
   flex-wrap: wrap;
 }
 .osCtaInner .btnPrimary {
-  background: #fff;
-  color: var(--brand-dark);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+  background: #0d1f2d;
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
 }
 .osCtaInner .btnPrimary:hover:not(:disabled) {
   transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
 }
 .osCtaGhost {
   background: rgba(255, 255, 255, 0.12);

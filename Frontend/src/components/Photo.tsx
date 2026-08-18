@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Building2 } from "lucide-react";
 
 interface PhotoProps {
   src?: string;
@@ -29,7 +30,7 @@ export default function Photo({ src, alt = "", className = "", ratio, eager = fa
     >
       {showFallback && (
         <div className="photoFallback" aria-hidden="true">
-          ◈
+          <Building2 size={30} />
         </div>
       )}
       {!showFallback && !loaded && <div className="photoShimmer" aria-hidden="true" />}

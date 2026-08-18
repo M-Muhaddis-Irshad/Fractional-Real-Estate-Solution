@@ -1,5 +1,6 @@
 "use client";
 
+import { Bell, BellRing } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import EmptyState from "@/components/EmptyState";
 import { fmtDateTime } from "@/lib/format";
@@ -19,7 +20,7 @@ export default function Notifications() {
 
       {notifications.length === 0 ? (
         <div className="card">
-          <EmptyState icon="◇" title="You're all caught up" sub="Announcements from the platform will appear here." />
+          <EmptyState icon={<Bell size={22} />} title="You're all caught up" sub="Announcements from the platform will appear here." />
         </div>
       ) : (
         <div className="dNotifList">
@@ -29,7 +30,7 @@ export default function Notifications() {
               className={"dNotif" + (n.read ? "" : " dNotifUnread")}
               onClick={() => !n.read && markNotificationRead(n.id)}
             >
-              <span className="dNotifIcon">{n.read ? "◇" : "◆"}</span>
+              <span className="dNotifIcon">{n.read ? <Bell size={15} /> : <BellRing size={15} />}</span>
               <span className="dNotifBody">
                 <span className="dNotifTitle">{n.title}</span>
                 <span className="dNotifMsg">{n.message}</span>

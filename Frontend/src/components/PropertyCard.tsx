@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ArrowRight, Star, TrendingUp } from "lucide-react";
 import OwnershipBar from "./OwnershipBar";
 import { money } from "@/lib/format";
 import type { Property } from "@/lib/types";
@@ -9,6 +10,12 @@ interface PropertyCardProps {
   footer?: ReactNode;
 }
 
+/**
+ * PropertyCard — marketplace card used on the landing page, Discover and admin
+ * listings. The card itself is a <div> so callers can inject their own footer
+ * (e.g. a dual "View Details" + "Invest" button row) via the `footer` prop;
+ * the thumbnail and name are links to the property detail page.
+ */
 export default function PropertyCard({ property, footer }: PropertyCardProps) {
   const pctFunded = property.totalShares
     ? Math.round((property.soldShares / property.totalShares) * 100)
@@ -18,46 +25,57 @@ export default function PropertyCard({ property, footer }: PropertyCardProps) {
     : {
         background: `linear-gradient(135deg, hsl(${property.hue} 45% 30%), hsl(${(property.hue + 50) % 360} 45% 18%))`,
       };
+  const href = `/property/${property.id}`;
 
   return (
-    <Link
-      href={`/property/${property.id}`}
-      className="propCard"
-      aria-label={`${property.name} — invest in fractional shares`}
-    >
-      <div
+    <div className="propCard" aria-label={`${property.name} — invest in fractional shares`}>
+      <Link
+        href={href}
         className="propThumb"
         style={thumbStyle}
-        role="img"
-        aria-label={property.imageUrl ? `${property.name} in ${property.city}` : `${property.name} — placeholder`}
+        aria-label={
+          property.imageUrl ? `${property.name} in ${property.city}` : `${property.name} — placeholder`
+        }
       >
         {!property.imageUrl && <span className="propThumbInitials">{property.initials}</span>}
+        <span className="propTypeBadge">{property.type}</span>
         <div className="propThumbTop">
-          <span className="propYield">▲ {property.yieldPct}% APY</span>
-          {property.featured && <span className="propFeatured">★ Featured</span>}
+          <span className="propYield">
+            <TrendingUp size={11} /> {property.yieldPct}% APY
+          </span>
+          {property.featured && (
+            <span className="propFeatured">
+              <Star size={11} fill="currentColor" /> Featured
+            </span>
+          )}
         </div>
-      </div>
+        <span className="propFundPill">{pctFunded}% funded</span>
+      </Link>
       <div className="propBody">
-        <div className="propTitleRow">
-          <div className="propName">{property.name}</div>
-        </div>
+        <Link href={href} className="propName">
+          {property.name}
+        </Link>
         <div className="propMeta">
           {property.city} · {property.type}
         </div>
         <div className="propFundRow">
           <span className="propFundLabel">
-            {pctFunded}% funded · {property.soldShares}/{property.totalShares} shares
+            {property.soldShares}/{property.totalShares} shares
           </span>
           <OwnershipBar sold={property.soldShares} total={property.totalShares} />
         </div>
+        <div className="propPriceRow">
+          <div className="propPrice">{money(property.pricePerShare)}</div>
+          <div className="propPriceLabel">per share</div>
+        </div>
         <div className="propFoot">
-          <div>
-            <div className="propPrice">{money(property.pricePerShare)}</div>
-            <div className="propPriceLabel">per share</div>
-          </div>
-          {footer || <span className="propCta">Invest →</span>}
+          {footer || (
+            <Link href={href} className="propCta">
+              Invest <ArrowRight size={12} />
+            </Link>
+          )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

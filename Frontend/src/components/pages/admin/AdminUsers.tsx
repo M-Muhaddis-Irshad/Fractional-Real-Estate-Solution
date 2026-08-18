@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAdmin } from "@/context/AdminContext";
 import Badge from "@/components/Badge";
@@ -22,7 +23,7 @@ interface UserDetailResponse {
 }
 
 export default function AdminUsers() {
-  const { users, requests, transactions, setUserStatus, updateUser, deleteUser } = useAdmin();
+  const { users, requests, transactions, setUserStatus, deleteUser } = useAdmin();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("all");
   const [detail, setDetail] = useState<User | null>(null);
@@ -94,7 +95,9 @@ export default function AdminUsers() {
 
       <div className="toolbar">
         <div className="searchBox">
-          <span className="searchIcon">⌕</span>
+          <span className="searchIcon">
+            <Search size={14} />
+          </span>
           <input
             className="input"
             placeholder="Search by name or email..."
@@ -181,16 +184,6 @@ export default function AdminUsers() {
                         {u.status === "suspended" && (
                           <button className="btn btnSuccess btnSm" onClick={() => setUserStatus(u.id, "restore")}>
                             Restore
-                          </button>
-                        )}
-                        {u.role === "user" && (
-                          <button className="btn btnSoft btnSm" onClick={() => updateUser(u.id, { role: "superadmin" })}>
-                            Make admin
-                          </button>
-                        )}
-                        {u.role === "superadmin" && (
-                          <button className="btn btnGhost btnSm" onClick={() => updateUser(u.id, { role: "user" })}>
-                            Revoke admin
                           </button>
                         )}
                         <button className="btn btnDanger btnSm" onClick={() => deleteUser(u.id)}>

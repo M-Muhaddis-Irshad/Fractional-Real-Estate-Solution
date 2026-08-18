@@ -2,7 +2,18 @@
 
 import { useState } from "react";
 import { useAdmin } from "@/context/AdminContext";
-import type { BlogItem, FaqItem, FeatureItem, SiteContent, StatItem, TestimonialItem } from "@/lib/types";
+import type { BlogItem, FaqItem, FeatureItem, SiteContent, StatItem, TestimonialItem, TrustChip } from "@/lib/types";
+
+// Icon names available for trust chips — must match the registry in Landing.tsx.
+const TRUST_ICON_OPTIONS = [
+  "ShieldCheck",
+  "Shield",
+  "Lock",
+  "BadgeCheck",
+  "CheckCircle2",
+  "Fingerprint",
+  "Landmark",
+];
 
 interface ContentDraft {
   hero: {
@@ -18,6 +29,7 @@ interface ContentDraft {
   testimonials: TestimonialItem[];
   faqs: FaqItem[];
   blog: BlogItem[];
+  trustChips: TrustChip[];
   cta: { title: string; subtitle: string; button: string };
 }
 
@@ -31,7 +43,7 @@ function ListEditor<T,>({
 }: {
   items: T[];
   onChange: (next: T[]) => void;
-  fields: { key: string; placeholder: string; type?: "textarea" }[];
+  fields: { key: string; placeholder: string; type?: "textarea" | "select"; options?: string[] }[];
   placeholder: string;
 }) {
   const update = (i: number, key: string, val: string) =>
@@ -59,6 +71,20 @@ function ListEditor<T,>({
                 value={(it as ListItem)[f.key] as string || ""}
                 onChange={(e) => update(i, f.key, e.target.value)}
               />
+            ) : f.type === "select" ? (
+              <select
+                key={f.key}
+                className="input"
+                value={(it as ListItem)[f.key] as string || ""}
+                onChange={(e) => update(i, f.key, e.target.value)}
+              >
+                <option value="">— no icon —</option>
+                {(f.options || []).map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
             ) : (
               <input
                 key={f.key}
@@ -84,6 +110,7 @@ function ListEditor<T,>({
 const TABS = [
   { key: "hero", label: "Hero" },
   { key: "stats", label: "Stats" },
+  { key: "trust", label: "Trust chips" },
   { key: "features", label: "Features" },
   { key: "testimonials", label: "Testimonials" },
   { key: "faqs", label: "FAQ" },
@@ -181,6 +208,23 @@ function ContentEditor({ content }: { content: SiteContent }) {
               { key: "value", placeholder: "Value, e.g. 8.6%" },
             ]}
             placeholder="+ Add statistic"
+          />
+        </div>
+      )}
+
+      {tab === "trust" && (
+        <div className="card cardPad">
+          <div className="cardSub" style={{ marginBottom: 14 }}>
+            Trust chips shown under the hero (label + optional icon).
+          </div>
+          <ListEditor
+            items={draft.trustChips}
+            onChange={set("trustChips")}
+            fields={[
+              { key: "label", placeholder: "Label, e.g. SEC Registered" },
+              { key: "icon", placeholder: "Icon", type: "select", options: TRUST_ICON_OPTIONS },
+            ]}
+            placeholder="+ Add trust chip"
           />
         </div>
       )}

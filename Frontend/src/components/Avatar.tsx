@@ -3,7 +3,7 @@ import { initialsOf, hueFrom } from "@/lib/format";
 interface AvatarProps {
   name?: string | null;
   size?: "sm" | "md" | "lg";
-  src?: string;
+  src?: string | null;
 }
 
 export default function Avatar({ name, size = "md", src }: AvatarProps) {

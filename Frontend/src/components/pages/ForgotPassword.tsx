@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ArrowLeft, Moon, Sun } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { api } from "@/lib/api";
+import AuthSideStats from "@/components/AuthSideStats";
 
 export default function ForgotPassword() {
   const { theme, toggleTheme } = useApp();
@@ -11,6 +13,11 @@ export default function ForgotPassword() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +46,42 @@ export default function ForgotPassword() {
 
   return (
     <div className="authPage">
-      <div className="authBg" aria-hidden="true" />
-      <div className="authCard">
-        <div className="authBrand">
-          <img src="/logo/logo.png" alt="Flux" className="authLogo" />
-          <span>Flux</span>
+      {/* Left brand panel (split-screen, ref: UI/Auth/ref 1) */}
+      <aside className="authSide">
+        <div className="authSideInner">
+          <div className="authSideBrand">
+            <img src="/logo/logo.webp" alt="Flux" className="authSideLogo" />
+            <span>Flux</span>
+          </div>
+          <div className="authSideBody">
+            <div className="authSideKicker">
+              <span className="authDot" /> Account recovery
+            </div>
+            <h1 className="authSideTitle">
+              Own a fraction.
+              <br />
+              <em>Earn the whole return.</em>
+            </h1>
+            <p className="authSideSub">
+              Access institutional-grade real estate through fractional ownership — secure,
+              transparent, and built for the next generation of global investors.
+            </p>
+            <ul className="authSidePoints">
+              <li>Assets vetted and underwritten by our real-estate team</li>
+              <li>Rental income distributed automatically, every month</li>
+              <li>Ownership recorded immutably, fully transparent</li>
+            </ul>
+          </div>
+          <AuthSideStats />
         </div>
+      </aside>
+
+      <main className="authMain">
+        <div className="authCard">
+          <div className="authBrand">
+            <img src="/logo/logo.webp" alt="Flux" className="authLogo" />
+            <span>Flux</span>
+          </div>
 
         {sent ? (
           <div>
@@ -58,7 +95,9 @@ export default function ForgotPassword() {
               Didn&apos;t receive it? Check your spam folder, or try again in a few minutes.
             </p>
             <div className="authBack">
-              <Link href="/login">← Back to sign in</Link>
+              <Link href="/login">
+                <ArrowLeft size={13} /> Back to sign in
+              </Link>
             </div>
           </div>
         ) : (
@@ -90,20 +129,23 @@ export default function ForgotPassword() {
 
               {error && <div className="errorText">{error}</div>}
 
-              <button className="btn btnPrimary btnBlock btnLg" type="submit" disabled={submitting}>
+              <button className="btn btnGold btnBlock btnLg" type="submit" disabled={submitting}>
                 {submitting ? "Sending…" : "Send reset link"}
               </button>
             </form>
 
             <div className="authBack">
-              <Link href="/login">← Back to sign in</Link>
+              <Link href="/login">
+                <ArrowLeft size={13} /> Back to sign in
+              </Link>
             </div>
           </>
         )}
-      </div>
+        </div>
+      </main>
 
       <button className="authThemeBtn" onClick={toggleTheme}>
-        {theme === "dark" ? "☀ Light mode" : "☾ Dark mode"}
+        {mounted && (theme === "dark" ? <><Sun size={14} /> Light mode</> : <><Moon size={14} /> Dark mode</>)}
       </button>
     </div>
   );

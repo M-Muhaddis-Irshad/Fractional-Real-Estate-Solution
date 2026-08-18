@@ -1,5 +1,5 @@
 export const money = (n) =>
-  "$" + Math.round(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+  "Rs" + Math.round(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
 
 export function nowParts() {
   const d = new Date();
