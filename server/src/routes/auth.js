@@ -373,4 +373,120 @@ router.get(
   }
 );
 
+// ---------------------------------------------------------------------------
+// Google One Tap — alternative login for unauthenticated visitors.
+// Receives a Google ID token (from the client-side One Tap prompt), verifies
+// it server-side, and returns the same { token, user } the other auth
+// endpoints return.  Shares the find-or-create logic with passport.js.
+// ---------------------------------------------------------------------------
+router.post("/google/onetap", async (req, res, next) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ error: "Missing Google credential." });
+    }
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res.status(503).json({ error: "Google sign-in is not configured." });
+    }
+
+    // --- Verify the ID token against Google's public JWKS ---
+    const parts = credential.split(".");
+    if (parts.length !== 3) {
+      return res.status(401).json({ error: "Invalid Google credential." });
+    }
+    const [, headerB64] = parts;
+    const header = JSON.parse(Buffer.from(headerB64, "base64url").toString());
+    const kid = header.kid;
+
+    // Fetch Google's public keys (cached for ~1 hour via Cache-Control).
+    const keysRes = await fetch("https://www.googleapis.com/oauth2/v3/certs");
+    if (!keysRes.ok) {
+      return res.status(502).json({ error: "Could not fetch Google signing keys." });
+    }
+    const { keys } = await keysRes.json();
+    const key = keys.find((k) => k.kid === kid);
+    if (!key) {
+      return res.status(401).json({ error: "Unknown Google signing key." });
+    }
+
+    // Verify using Web Crypto (Node 16+).
+    const publicKey = await crypto.subtle.importKey(
+      "jwk",
+      key,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+    const data = new TextEncoder().encode(parts.join("."));
+    const sig = Buffer.from(parts[2], "base64url");
+    const valid = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", publicKey, sig, data);
+    if (!valid) {
+      return res.status(401).json({ error: "Google credential signature invalid." });
+    }
+
+    // Decode the payload and check audience + expiry.
+    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
+    if (payload.aud !== process.env.GOOGLE_CLIENT_ID) {
+      return res.status(401).json({ error: "Token audience mismatch." });
+    }
+    if (payload.exp * 1000 < Date.now()) {
+      return res.status(401).json({ error: "Google credential has expired." });
+    }
+
+    const email = payload.email?.toLowerCase();
+    if (!email) {
+      return res.status(401).json({ error: "Google token has no email." });
+    }
+
+    // --- Find-or-create user (same logic as passport.js) ---
+    const name = (
+      payload.name || payload.given_name || email.split("@")[0] || "Google user"
+    ).trim();
+    const avatar = payload.picture || null;
+    const googleId = payload.sub;
+
+    let user = await User.findOne({ email });
+    if (user) {
+      if (!user.googleId) user.googleId = googleId;
+      if (!user.name && name) user.name = name;
+      if (!user.avatar && avatar) user.avatar = avatar;
+      await user.save();
+      await logActivity({
+        userId: user._id,
+        type: "google_signin",
+        message: `Signed in via Google One Tap (${user.googleId ? "linked" : "existing"} account).`,
+      });
+    } else {
+      const settings = await getSettings();
+      const requireApproval = settings.platform?.requireApproval === true;
+      user = await User.create({
+        email,
+        name,
+        avatar,
+        provider: "google",
+        googleId,
+        role: "user",
+        status: requireApproval ? "pending" : "active",
+        acceptedTerms: true,
+        acceptedTermsAt: new Date(),
+        termsVersion: settings.termsVersion,
+      });
+      await logActivity({
+        userId: user._id,
+        type: "google_signup",
+        message: "Account created via Google One Tap.",
+      });
+      emitToAdmins("users:changed");
+    }
+
+    user.lastLoginAt = new Date();
+    await user.save();
+
+    const token = signToken(user);
+    res.json({ token, user: user.toSafeJSON() });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

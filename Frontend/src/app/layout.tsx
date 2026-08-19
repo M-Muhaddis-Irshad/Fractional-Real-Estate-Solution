@@ -5,6 +5,7 @@ import Providers from "@/components/Providers";
 import Toast from "@/components/Toast";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import PwaInstallPrompt from "@/components/PwaInstallPrompt";
+import GoogleOneTap from "@/components/GoogleOneTap";
 import "../index.css";
 import "../styles/landing.css";
 import "../styles/ourstory.css";
@@ -83,6 +84,7 @@ export default function RootLayout({
           {children}
           <Toast />
           <ServiceWorkerRegister />
+          <GoogleOneTap />
           <PwaInstallPrompt />
         </Providers>
       </body>

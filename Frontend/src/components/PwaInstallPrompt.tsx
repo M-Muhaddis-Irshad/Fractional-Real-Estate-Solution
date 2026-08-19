@@ -30,21 +30,30 @@ export default function PwaInstallPrompt() {
   useEffect(() => {
     // Already running as an installed app — never prompt.
     if (window.matchMedia("(display-mode: standalone)").matches) return;
-    // Respect a previous dismiss so the banner doesn't nag on every visit.
+    // Respect a previous dismiss/install so the banner never reappears.
     if (localStorage.getItem(DISMISS_KEY)) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
     const onPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
-      setVisible(true);
+      // Stagger: wait 3 s so the banner doesn't visually clash with the
+      // Google One Tap popup that may appear simultaneously for new visitors.
+      timer = setTimeout(() => {
+        setDeferred(e as BeforeInstallPromptEvent);
+        setVisible(true);
+      }, 3000);
     };
     const onInstalled = () => {
+      // App was installed — mark permanently so it never shows again.
+      try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* private browsing */ }
       setDeferred(null);
       setVisible(false);
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
+      if (timer) clearTimeout(timer);
       window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
     };
