@@ -84,11 +84,11 @@
 .lnNavInner {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 20px 14px 20px 22px;
+  padding: 20px 14px 20px 14px;
   height: 60px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center !important;
   gap: 28px;
   border-radius: 999px;
   background: var(--surface);
@@ -116,8 +116,8 @@
   letter-spacing: -0.02em;
 }
 .lnLogo {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: 10%;
   /* box-shadow: 0 0 0 1px var(--border-strong), 0 0 12px rgba(217, 142, 59, 0.35); */
