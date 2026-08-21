@@ -228,6 +228,11 @@
   justify-content: space-between;
   padding: 0 28px;
 }
+.aTopbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 .aTopbarTitle {
   font-family: var(--font-display);
   font-size: 15px;
@@ -643,4 +648,202 @@
   .aNavOverlay {
     display: none;
   }
+}
+
+/* ---------- Sheet overlay (always-hidden base; visible only ≤960px) ---------- */
+.aSheetOverlay {
+  display: none;
+}
+
+/* ---------- Mobile bottom nav ---------- */
+.aMobileNav {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .aMenuBtn { display: none; }
+  .aNavOverlay { display: none !important; }
+  .aSidebarWrap { display: none !important; }
+
+  .aContent { padding: 22px 16px 90px; }
+
+  .aMobileNav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    gap: 2px;
+  }
+
+  .aMTab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 4px 5px;
+    border-radius: 14px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: background 0.18s ease, color 0.18s ease;
+    text-decoration: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+
+  .aMTab:hover { color: var(--gold-ink); }
+  .aMTabActive { color: var(--gold); background: var(--gold-soft); font-weight: 700; }
+  .aMTabActive:hover { color: var(--gold); }
+
+  .aMIcon {
+    position: relative;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+
+  .aMTabActive .aMIcon {
+    background: var(--gold);
+    color: #fff;
+    box-shadow: 0 2px 8px var(--glow);
+  }
+
+  .aMBadge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    min-width: 14px;
+    height: 14px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 8.5px;
+    font-weight: 800;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+  }
+
+  /* Bottom sheet overlay — always in DOM, toggled via .aSheetOpen */
+  .aSheetOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+
+  .aSheetOpen {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .aSheet {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.25);
+    max-height: 70vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+  }
+
+  .aSheetOpen .aSheet {
+    transform: translateY(0);
+  }
+
+  .aSheetHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .aSheetTitle {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .aSheetClose {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .aSheetClose:hover {
+    color: var(--ink);
+    border-color: var(--brand);
+  }
+
+  .aSheetBody { padding: 8px 12px 20px; }
+
+  .aSheetRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--ink-2);
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .aSheetRow:hover { background: var(--brand-soft); color: var(--brand); }
+  .aSheetRowActive { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+
+  .aSheetRowIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    flex-shrink: 0;
+  }
+
+  .aSheetRowActive .aSheetRowIcon { background: var(--brand-soft); color: var(--brand); }
+  .aSheetRowLabel { flex: 1; }
+  [data-theme="dark"] .aMobileNav { box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35); }
+  [data-theme="dark"] .aMTab:hover { color: var(--brand-2); }
+  [data-theme="dark"] .aMTabActive { color: var(--gold); background: var(--gold-soft); }
 }

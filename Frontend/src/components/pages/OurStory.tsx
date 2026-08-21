@@ -348,10 +348,10 @@ function Terms() {
             ))}
           </div>
           <Reveal className="osDocLinks">
-            <Link href="/our-story#terms" className="btn btnGhost btnSm">
+            <Link href="/terms" className="btn btnGhost btnSm">
               Terms &amp; Conditions
             </Link>
-            <Link href="/our-story#terms" className="btn btnGhost btnSm">
+            <Link href="/privacy" className="btn btnGhost btnSm">
               Privacy Policy
             </Link>
           </Reveal>

@@ -1300,6 +1300,11 @@
   display: none;
 }
 
+/* Account hub (mobile-only) */
+.dAccountHub {
+  display: none;
+}
+
 /* ============================================================
    Auth pages — split-screen brand panel + form (ref: UI/Auth/ref 1)
    ============================================================ */
@@ -1791,10 +1796,14 @@
     right: 0;
     z-index: 50;
     display: flex;
+    align-items: center;
+    justify-content: center;
     background: var(--surface);
-    border-top: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-    gap: 4px;
+    gap: 2px;
   }
 
   .dMTab {
@@ -1802,28 +1811,46 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 7px 4px;
-    border-radius: 10px;
+    gap: 2px;
+    padding: 6px 4px 5px;
+    border-radius: 14px;
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--muted);
-    transition: background 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
   }
 
   .dMTab:hover {
-    background: var(--brand-soft);
-    color: var(--brand);
+    color: var(--gold-ink);
   }
 
   .dMTabActive {
-    color: var(--brand);
-    background: var(--brand-soft);
+    color: var(--gold);
+    background: var(--gold-soft);
+    font-weight: 700;
+  }
+
+  .dMTabActive:hover {
+    color: var(--gold);
   }
 
   .dMIcon {
     position: relative;
     font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+
+  .dMTabActive .dMIcon {
+    background: var(--gold);
+    color: #fff;
+    box-shadow: 0 2px 8px var(--glow);
   }
 
   .dMBadge {
@@ -1845,6 +1872,149 @@
 
   .dContent {
     padding: 22px 18px 90px;
+  }
+
+  /* Account hub page — mobile only */
+  .dAccountHub {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: riseIn 0.3s ease both;
+  }
+
+  .dAccountHeader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 28px 18px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+  }
+
+  .dAccountAvatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .dAccountName {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+
+  .dAccountEmail {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .dAccountRole {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    background: var(--gold-soft);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-top: 2px;
+  }
+
+  .dAccountList {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .dAccountRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    text-decoration: none;
+    color: var(--ink-2);
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .dAccountRow:hover {
+    background: var(--gold-soft);
+    color: var(--gold);
+  }
+
+  .dAccountRow:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dAccountRowIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    flex-shrink: 0;
+  }
+
+  .dAccountRow:hover .dAccountRowIcon {
+    background: var(--gold-soft);
+    color: var(--gold);
+  }
+
+  .dAccountRowLabel {
+    flex: 1;
+  }
+
+  .dAccountRowMeta {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .dAccountRowArrow {
+    color: var(--faint);
+  }
+
+  .dAccountLogout {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--danger);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background 0.15s ease;
+  }
+
+  .dAccountLogout:hover {
+    background: var(--danger-soft);
+  }
+
+  .dAccountLogout .dAccountRowIcon {
+    background: var(--danger-soft);
+    color: var(--danger);
   }
 
   .dTopbar {
@@ -1879,6 +2049,11 @@
   .dStatusPill {
     display: none;
   }
+
+  /* Dark-mode overrides for mobile nav */
+  [data-theme="dark"] .dMobileNav { box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35); }
+  [data-theme="dark"] .dMTab:hover { color: var(--brand-2); }
+  [data-theme="dark"] .dMTabActive { color: var(--gold); background: var(--gold-soft); }
 }
 
 @media (max-width: 560px) {

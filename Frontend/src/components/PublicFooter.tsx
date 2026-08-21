@@ -49,10 +49,10 @@ export default function PublicFooter() {
         </div>
       </div>
       <div className="lnFooterBottom">
-        <span>© {new Date().getFullYear()} Obsidian Flux LLC. All rights reserved.</span>
+        <span>© {new Date().getFullYear()} Flux LLC. All rights reserved.</span>
         <div className="lnFooterLegalLinks">
-          <Link href="/our-story#terms">Terms</Link>
-          <Link href="/our-story#terms">Privacy</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/privacy">Privacy</Link>
         </div>
       </div>
     </footer>

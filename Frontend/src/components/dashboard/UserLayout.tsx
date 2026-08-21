@@ -22,12 +22,20 @@ import OnboardingModal from "@/components/OnboardingModal";
 import LoadingScreen from "@/components/LoadingScreen";
 import type { User } from "@/lib/types";
 
-const NAV = [
+const SIDEBAR_NAV = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/discover", icon: Compass, label: "Discover" },
   { to: "/ledger", icon: Receipt, label: "My Ledger" },
   { to: "/notifications", icon: Bell, label: "Notifications" },
   { to: "/profile", icon: UserIcon, label: "Profile" },
+];
+
+const MOBILE_NAV = [
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/discover", icon: Compass, label: "Discover" },
+  { to: "/ledger", icon: Receipt, label: "Ledger" },
+  { to: "/notifications", icon: Bell, label: "Alerts" },
+  { to: "/account", icon: UserIcon, label: "Account" },
 ];
 
 function isNavActive(pathname: string, to: string): boolean {
@@ -57,7 +65,7 @@ function Sidebar({
       </Link>
       <div className="dNavSection">Overview</div>
       <nav className="dNav">
-        {NAV.map((n) => (
+        {SIDEBAR_NAV.map((n) => (
           <Link
             key={n.to}
             href={n.to}
@@ -201,7 +209,7 @@ function MobileNav() {
   const pathname = usePathname();
   return (
     <nav className="dMobileNav">
-      {NAV.map((n) => (
+      {MOBILE_NAV.map((n) => (
         <Link
           key={n.to}
           href={n.to}

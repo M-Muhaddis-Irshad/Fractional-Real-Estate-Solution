@@ -18,6 +18,53 @@ import { useApp } from "@/context/AppContext";
 import { AreaTrend, Donut } from "@/components/Charts";
 import Avatar from "@/components/Avatar";
 import { money, moneyShort, timeAgo, fmtDateTime } from "@/lib/format";
+import type { Activity } from "@/lib/types";
+
+const TYPE_LABELS: Record<string, string> = {
+  register: "User registered",
+  google_signup: "Google sign-up",
+  login: "User login",
+  admin_login: "Admin login",
+  google_signin: "Google sign-in",
+  terms_accepted: "Terms accepted",
+  password_reset_requested: "Password reset requested",
+  password_reset: "Password reset",
+  password_changed: "Password changed",
+  profile_updated: "Profile updated",
+  avatar_updated: "Avatar updated",
+  request_submitted: "Purchase request",
+  request_approved: "Request approved",
+  request_rejected: "Request rejected",
+  property_listed: "Property listed",
+  property_approved: "Property approved",
+  property_rejected: "Property rejected",
+  content_updated: "Content updated",
+  notification_sent: "Notification sent",
+  settings_updated: "Settings updated",
+  user_approved: "User approved",
+  user_rejected: "User rejected",
+  user_suspended: "User suspended",
+  user_restored: "User restored",
+  user_edited: "User edited",
+  payment_confirmed: "Payment confirmed",
+};
+
+function actorName(a: Activity): string {
+  return a.actor?.name || a.user?.name || "System";
+}
+
+function activityMessage(a: Activity): string {
+  if (a.message) return a.message;
+  if (a.type && TYPE_LABELS[a.type]) return TYPE_LABELS[a.type];
+  if (a.type) return a.type.replace(/_/g, " ");
+  return "Activity recorded";
+}
+
+function typeLabel(a: Activity): string {
+  if (a.type && TYPE_LABELS[a.type]) return TYPE_LABELS[a.type];
+  if (a.type) return a.type.replace(/_/g, " ");
+  return "";
+}
 
 function Kpi({
   label,
@@ -153,17 +200,19 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="aActivityList">
-            {activity.slice(0, 8).map((a) => (
-              <div className="aActivityRow" key={a.id}>
-                <Avatar name={a.actor?.name || a.user?.name || "System"} size="sm" />
+            {activity.slice(0, 8).map((a, i) => (
+              <div className="aActivityRow" key={a.id ?? `activity-${i}`}>
+                <Avatar name={actorName(a)} size="sm" />
                 <div className="aActivityBody">
-                  <div className="aActivityMsg">{a.message}</div>
+                  <div className="aActivityMsg">{activityMessage(a)}</div>
                   <div className="aActivityMeta">
-                    {(a.actor?.name || a.user?.name || "System") + " · "}
+                    {actorName(a) + " · "}
                     {timeAgo(a.createdAt)}
                   </div>
                 </div>
-                <span className="aActivityType">{a.type}</span>
+                <span className="aActivityType">
+                  {typeLabel(a)}
+                </span>
               </div>
             ))}
             {activity.length === 0 && <div className="dCardBodyEmpty">No activity recorded yet.</div>}

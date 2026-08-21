@@ -4,6 +4,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, Moon, Sun } from "lucide-react";
 import { useApp } from "@/context/AppContext";
+import PublicMobileNav from "@/components/PublicMobileNav";
 import type { User } from "@/lib/types";
 
 export interface NavLinkDef {
@@ -121,6 +122,11 @@ export default function PublicNav({
               </button>
             </>
           )}
+          {/*
+            Hamburger is hidden on mobile (≤960px) via CSS — the bottom tab
+            bar (PublicMobileNav) replaces it at that breakpoint. Above 960px
+            this button is still visible for the legacy dropdown menu.
+          */}
           <button
             className={"lnBurger" + (menuOpen ? " lnBurgerOpen" : "")}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -133,6 +139,7 @@ export default function PublicNav({
           </button>
         </div>
       </div>
+      {/* Desktop-only dropdown menu (above 960px) */}
       {menuOpen && (
         <nav className="lnMobileMenu" aria-label="Mobile">
           {links.map((l) => renderLink(l, close))}
@@ -157,6 +164,8 @@ export default function PublicNav({
           )}
         </nav>
       )}
+      {/* Mobile bottom tab bar (≤960px) — replaces hamburger + dropdown */}
+      <PublicMobileNav links={links} />
     </header>
   );
 }

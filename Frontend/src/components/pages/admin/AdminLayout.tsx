@@ -24,6 +24,7 @@ import { useApp } from "@/context/AppContext";
 import { useAdmin } from "@/context/AdminContext";
 import Avatar from "@/components/Avatar";
 import LoadingScreen from "@/components/LoadingScreen";
+import AdminMobileNav from "@/components/pages/admin/AdminMobileNav";
 
 const SECTIONS = [
   {
@@ -241,6 +242,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <div className="aMain">
         <AdminTopbar onMenu={openSidebar} />
         <main className="aContent">{children}</main>
+        <AdminMobileNav />
       </div>
     </div>
   );
